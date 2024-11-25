@@ -57,11 +57,11 @@
   }
 
 
-    interface AudioEmit {
-        audioResult: String;
+    interface AudioEmits {
+        audioResult: string;
     }
 
-    const emits = defineEmits<AudioEmit>();
+    const emits = defineEmits<AudioEmits>();
 
       const state = ref<AudioRecorderState>({
         isRecording: false,
@@ -77,7 +77,7 @@
 
       const visualSettings: AudioVisualSettings = {
         waveformColor: '#fbf8f5',
-        backgroundColor: '#fbf8f5',
+        backgroundColor: '#F6F6F8',
         fftSize: 4096,
         smoothingTimeConstant: 0.8
       }
@@ -88,14 +88,14 @@
       const minSecond: number = 3
       const maxSecond: number = 10
       let currentSecond: number = 0
-      let voiceTimer = null
+      let voiceTimer: string | number | NodeJS.Timeout | null | undefined = null
 
       // 初始化录音设备
       const initRecording = async (): Promise<void> => {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
 
-          state.value.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+          state.value.audioContext = new window.AudioContext()
           state.value.analyser = state.value.audioContext.createAnalyser()
 
           // 配置分析器节点
@@ -119,11 +119,11 @@
             if (state.value.audioUrl) {
               URL.revokeObjectURL(state.value.audioUrl)
             }
-            state.value.audioUrl = URL.createObjectURL(audioBlob)
+            state.value.audioUrl = URL.createObjectURL(audioBlob) as string;
             state.value.audioChunks = []
-            if (currentSecond < 3) {
+            if (currentSecond < minSecond) {
                 clearVoiceTimer()
-                alert('最少录制3s')
+                alert(`最少录制${minSecond}s`)
             } else {
                 emits('audioResult', state.value.audioUrl)
             }
@@ -234,7 +234,7 @@
         clearVoiceTimer()
         voiceTimer = setInterval(() => {
             currentSecond++
-            if (currentSecond > 9 && state.value.isRecording) {
+            if (currentSecond >= maxSecond && state.value.isRecording) {
                 clearVoiceTimer(false)
                 toggleRecording()
             }
@@ -294,17 +294,17 @@
     border-radius: 12px;
     max-width: 800px;
     margin: 0 auto;
-    background-color: #fbf8f5;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    /* background-color: #fbf8f5; */
+    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05); */
   }
 
   .waveform {
     width: 100%;
     height: 200px;
-    background: #fbf8f5;
+    /* background: #fbf8f5; */
     margin-bottom: 20px;
     border-radius: 8px;
-    border: 1px solid #E8E0D8;
+    /* border: 1px solid #E8E0D8; */
   }
 
   .controls {

@@ -11,22 +11,22 @@
 </script>
 
 <template>
-  <section class="py-24 text-card-foreground">
+  <section class="text-card-foreground py-24">
     <div class="container">
       <div class="text-center">
         <h1 class="text-4xl font-bold lg:text-5xl">
           Features your clients will love
         </h1>
-        <p class="mt-3 text-lg text-foreground/60">
+        <p class="text-foreground/60 mt-3 text-lg">
           In this section you can showcase the features of your SaaS.
         </p>
       </div>
 
       <div class="mt-12 grid grid-cols-1 gap-8">
         <div
-          class="grid items-center gap-8 rounded-2xl border bg-card/50 p-8 lg:grid-cols-2 lg:gap-16"
+          class="bg-card/50 grid items-center gap-8 rounded-2xl border p-8 lg:grid-cols-2 lg:gap-16"
         >
-          <div class="overflow-hidden rounded-xl bg-primary/10 p-12">
+          <div class="bg-primary/10 overflow-hidden rounded-xl p-12">
             <NuxtImg
               src="/images/feature-image.svg"
               class="block dark:hidden"
@@ -41,7 +41,7 @@
 
           <div>
             <h3 class="text-3xl font-bold">Feature A</h3>
-            <p class="mt-2 leading-normal text-foreground/60">
+            <p class="text-foreground/60 mt-2 leading-normal">
               This is a brilliant feature. And below you can see some reasons
               why. This is basically just a dummy text.
             </p>
@@ -52,12 +52,12 @@
 
             <div class="mt-6 grid grid-cols-2 gap-4">
               <div class="text-card-foreground">
-                <StarIcon class="size-6 text-3xl text-highlight" />
+                <StarIcon class="text-highlight size-6 text-3xl" />
                 <strong class="mt-2 block">Benefit 1</strong>
                 <p class="text-foreground/60">This is a brilliant benefit.</p>
               </div>
               <div class="text-card-foreground">
-                <PointerIcon class="size-6 text-3xl text-highlight" />
+                <PointerIcon class="text-highlight size-6 text-3xl" />
                 <strong class="mt-2 block">Benefit 2</strong>
                 <p class="text-foreground/60">This is a brilliant benefit.</p>
               </div>
@@ -66,9 +66,9 @@
         </div>
 
         <div
-          class="grid items-center gap-8 rounded-2xl border bg-card/50 p-8 lg:grid-cols-2 lg:gap-16"
+          class="bg-card/50 grid items-center gap-8 rounded-2xl border p-8 lg:grid-cols-2 lg:gap-16"
         >
-          <div class="overflow-hidden rounded-xl bg-primary/10 p-12 lg:order-2">
+          <div class="bg-primary/10 overflow-hidden rounded-xl p-12 lg:order-2">
             <NuxtImg
               src="/images/feature-image.svg"
               class="block dark:hidden"
@@ -83,7 +83,7 @@
 
           <div class="lg:order-1">
             <h3 class="text-3xl font-bold">Feature B</h3>
-            <p class="mt-2 leading-normal text-foreground/60">
+            <p class="text-foreground/60 mt-2 leading-normal">
               This is a brilliant feature. And below you can see some reasons
               why. This is basically just a dummy text.
             </p>
@@ -94,12 +94,12 @@
 
             <div class="mt-6 grid grid-cols-2 gap-4">
               <div class="text-card-foreground">
-                <UploadIcon class="size-6 text-3xl text-highlight" />
+                <UploadIcon class="text-highlight size-6 text-3xl" />
                 <strong class="mt-2 block">Benefit 1</strong>
                 <p class="text-foreground/60">This is a brilliant benefit.</p>
               </div>
               <div class="text-card-foreground">
-                <CloudIcon class="size-6 text-3xl text-highlight" />
+                <CloudIcon class="text-highlight size-6 text-3xl" />
                 <strong class="mt-2 block">Benefit 2</strong>
                 <p class="text-foreground/60">This is a brilliant benefit.</p>
               </div>
@@ -108,9 +108,9 @@
         </div>
 
         <div
-          class="grid items-center gap-8 rounded-2xl border bg-card/50 p-8 lg:grid-cols-2 lg:gap-16"
+          class="bg-card/50 grid items-center gap-8 rounded-2xl border p-8 lg:grid-cols-2 lg:gap-16"
         >
-          <div class="overflow-hidden rounded-xl bg-primary/10 p-12">
+          <div class="bg-primary/10 overflow-hidden rounded-xl p-12">
             <NuxtImg
               src="/images/feature-image.svg"
               class="block dark:hidden"
@@ -125,7 +125,7 @@
 
           <div>
             <h3 class="text-3xl font-bold">Feature C</h3>
-            <p class="mt-2 leading-normal text-foreground/60">
+            <p class="text-foreground/60 mt-2 leading-normal">
               This is a brilliant feature. And below you can see some reasons
               why. This is basically just a dummy text.
             </p>
@@ -136,12 +136,12 @@
 
             <div class="mt-6 grid grid-cols-2 gap-4">
               <div class="text-card-foreground">
-                <PhoneIcon class="size-6 text-3xl text-highlight" />
+                <PhoneIcon class="text-highlight size-6 text-3xl" />
                 <strong class="mt-2 block">Benefit 1</strong>
                 <p class="text-foreground/60">This is a brilliant benefit.</p>
               </div>
               <div class="text-card-foreground">
-                <PaperclipIcon class="size-6 text-3xl text-highlight" />
+                <PaperclipIcon class="text-highlight size-6 text-3xl" />
                 <strong class="mt-2 block">Benefit 2</strong>
                 <p class="text-foreground/60">This is a brilliant benefit.</p>
               </div>

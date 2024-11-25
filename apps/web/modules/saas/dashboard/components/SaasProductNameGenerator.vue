@@ -17,20 +17,20 @@
     },
   });
 
-  const topicValue = computed(() => {
-    return values.topic || "";
-  });
+  // const topicValue = computed(() => {
+  //   return values.topic || "";
+  // });
 
-  const { data, pending, refresh, status } = useAsyncData(
-    () => {
-      return apiCaller.ai.generateProductNames.query({
-        topic: topicValue.value,
-      });
-    },
-    {
-      immediate: false,
-    },
-  );
+  // const { data, pending, refresh, status } = useAsyncData(
+  //   () => {
+  //     return apiCaller.ai.generateProductNames.query({
+  //       topic: topicValue.value,
+  //     });
+  //   },
+  //   {
+  //     immediate: false,
+  //   },
+  // );
 
   const onSubmit = handleSubmit(async () => {
     refresh();

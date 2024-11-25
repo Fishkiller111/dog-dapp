@@ -50,3 +50,9 @@
     </GradientBackgroundWrapper>
   </ConfigProvider>
 </template>
+
+<style>
+html, body {
+    /* --colors-primary-rgb: 251,248,245 */
+}
+</style>
