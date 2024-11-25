@@ -13,6 +13,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans;
+    --primary-color: #fbf8f5;
   }
 }
 
