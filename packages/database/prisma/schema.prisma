@@ -34,6 +34,8 @@ model User {
   memberships        TeamMembership[]
   verificationtokens UserVerificationToken[]
   oneTimePasswords   UserOneTimePassword[]
+  Task               Task[]
+  Score              Score[]
 }
 
 model UserSession {
@@ -139,4 +141,48 @@ model Subscription {
   planId          String
   variantId       String
   nextPaymentDate DateTime?
+}
+
+// score
+
+enum ScoreStatus {
+  WITHDRAW_UNPAID // 未提现
+  WITHDRAW_PENDING // 提现中
+  WITHDRAW_COMPLETE // 提现完成
+}
+
+model Score {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  score     Int
+  Token     Int         @default(0)
+  Status    ScoreStatus @default(WITHDRAW_UNPAID)
+  createdAt DateTime    @default(now())
+}
+
+// 任务
+enum TaskStatus {
+  DOEN
+  FAILED
+  PENDING
+}
+
+enum TaskType {
+  DAILY_CHECKIN // 每日签到, 一天一次
+  JOIN_DISCORD // 加入 Discord，永久一次
+  JOIN_TELEGRAM // 加入 Telegram，永久一次
+  SHARE_DISCORD // 分享 Discord，一天一次
+  SHARE_TELEGRAM // 分享 Telegram，一天一次
+}
+
+model Task {
+  id        String     @id @default(cuid())
+  type      TaskType
+  userId    String
+  user      User       @relation(fields: [userId], references: [id])
+  status    TaskStatus
+  createdAt DateTime   @default(now())
+
+  @@unique([userId, type])
 }

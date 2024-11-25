@@ -1,125 +1,150 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+  import { ref } from "vue";
 
-const { apiCaller } = useApiCaller();
+  const { apiCaller } = useApiCaller();
+  const selectedFile = ref<File | null>(null);
+  const uploadStatus = ref("");
+  const isUploading = ref(false);
 
-const isRecording = ref(false);
-const mediaRecorder = ref<MediaRecorder | null>(null);
-const audioChunks = ref<Blob[]>([]);
-const audioUrl = ref(''); // 用于存储音频URL
-
-// 将Blob转换为base64
-const blobToBase64 = (blob: Blob): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      // 获取base64字符串，并去掉前缀 "data:audio/wav;base64,"
-      const base64String = (reader.result as string).split(',')[1];
-      resolve(base64String);
-    };
-    reader.onerror = reject;
-    reader.readAsDataURL(blob);
-  });
-};
-
-
-// 处理录音权限和初始化
-const initRecorder = async () => {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    mediaRecorder.value = new MediaRecorder(stream);
-
-    mediaRecorder.value.ondataavailable = (event) => {
-      if (event.data.size > 0) {
-        audioChunks.value.push(event.data);
-      }
-    };
-
-    mediaRecorder.value.onstop = async () => {
-      // 将录音数据转换为 WAV 格式的 Blob
-      const audioBlob = new Blob(audioChunks.value, { type: 'audio/wav' });
-      
-      try {
-        // 转换为base64
-        const base64Audio = await blobToBase64(audioBlob);
-        console.log(1111111, base64Audio);
-        
-        // 发送base64格式的音频数据到后端
-        const result = await apiCaller.ai.generateProductNames.query({
-          audio: base64Audio,
-        });
-        console.log('AI 分析结果:', result);
-
-        // 下载转换后的音频文件
-      } catch (error) {
-        console.error('发送录音失败:', error);
-      }
-
-      // 清空录音数据，为下次录音做准备
-      audioChunks.value = [];
-    };
-
-  } catch (error) {
-    console.error('无法获取麦克风权限:', error);
-  }
-};
-
-// 开始/停止录音
-const toggleRecording = async () => {
-  if (!mediaRecorder.value) {
-    await initRecorder();
-  }
-
-  if (mediaRecorder.value) {
-    if (!isRecording.value) {
-      mediaRecorder.value.start();
-      isRecording.value = true;
-      // 清除之前的音频URL
-      if (audioUrl.value) {
-        URL.revokeObjectURL(audioUrl.value);
-        audioUrl.value = '';
-      }
-    } else {
-      mediaRecorder.value.stop();
-      isRecording.value = false;
+  const handleFileChange = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files[0]) {
+      selectedFile.value = input.files[0];
     }
+  };
+
+  const uploadFile = async () => {
+    if (!selectedFile.value) {
+      uploadStatus.value = "请先选择音频文件";
+      return;
+    }
+
+    isUploading.value = true;
+    uploadStatus.value = "上传中...";
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile.value);
+
+      const response = await fetch("/api/ai/score", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = await response.json();
+
+      if (result.code !== 200) {
+        uploadStatus.value = `上传失败：${result.message}`;
+        return;
+      }
+      uploadStatus.value = `上传成功！文件名: ${result.filename}`;
+      selectedFile.value = null;
+
+      const res = await apiCaller.ai.generateProductNames.query({
+        audio: result.filename,
+      });
+
+      console.log(111111, res);
+    } catch (error) {
+      uploadStatus.value = `上传出错：${(error as Error).message}`;
+    } finally {
+      isUploading.value = false;
+    }
+  };
+
+  const TASK_TYPES = [
+    "DAILY_CHECKIN",
+    "JOIN_DISCORD",
+    "JOIN_TELEGRAM",
+    "SHARE_DISCORD",
+    "SHARE_TELEGRAM",
+  ] as const;
+  type TaskType = (typeof TASK_TYPES)[number];
+
+  const submitTasks = async (type: TaskType) => {
+    const res = await apiCaller.task.submitTasks.mutate({
+      taskType: type,
+    }).catch((error) => {
+      console.error(error.message);
+    });
+    console.log(222222, res);
+  };
+  // 余额
+  let balanceInquiry = await apiCaller.billing.balanceInquiry.useQuery();
+  const drawal = async () => {
+    const res = await apiCaller.billing.withdrawBalance.mutate();
+    console.log(res);
+    balanceInquiry = await apiCaller.billing.balanceInquiry.useQuery();
   }
-};
+  
+
 </script>
 
 <template>
   <section class="py-24">
     <div class="container">
-      <div class="flex flex-col items-center gap-4">
-        <!-- 录音按钮 -->
-        <button
-          @click="toggleRecording"
-          class="rounded-lg px-6 py-3 transition-colors"
-          :class="isRecording 
-            ? 'bg-red-500 hover:bg-red-600 text-white' 
-            : 'bg-blue-500 hover:bg-blue-600 text-white'"
-        >
-          {{ isRecording ? '停止录音' : '开始录音' }}
-        </button>
-
-        <!-- 录音状态显示 -->
-        <div v-if="isRecording" class="animate-pulse text-red-500">
-          正在录音...
+      <div class="mx-auto max-w-md">
+        <div class="mb-6">
+          <input
+            type="file"
+            accept="audio/*"
+            @change="handleFileChange"
+            class="block w-full text-sm text-gray-500 file:mr-4 file:rounded-full file:border-0 file:bg-violet-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-violet-700 hover:file:bg-violet-100"
+          />
         </div>
 
-        <!-- 音频播放器 -->
-        <audio v-if="audioUrl" controls :src="audioUrl" class="mt-4">
-          您的浏览器不支持音频播放
-        </audio>
+        <div class="mb-4">
+          <span v-if="selectedFile" class="text-sm text-gray-600">
+            已选择文件: {{ selectedFile.name }}
+          </span>
+        </div>
+
+        <button
+          @click="uploadFile"
+          :disabled="!selectedFile || isUploading"
+          class="w-full rounded-lg bg-violet-600 px-4 py-2 text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {{ isUploading ? "上传中..." : "上传音频文件" }}
+        </button>
+
+        <div
+          v-if="uploadStatus"
+          class="mt-4 rounded-lg p-4"
+          :class="{
+            'bg-green-100 text-green-700': uploadStatus.includes('成功'),
+            'bg-red-100 text-red-700':
+              uploadStatus.includes('失败') || uploadStatus.includes('错误'),
+            'bg-blue-100 text-blue-700': uploadStatus.includes('上传中'),
+          }"
+        >
+          {{ uploadStatus }}
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="mx-auto max-w-md">
+        <button
+          v-for="type in TASK_TYPES"
+          :key="type"
+          @click="submitTasks(type)"
+          class="mt-3 w-full rounded-lg bg-violet-600 px-4 py-2 text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          任务: {{ type }}
+        </button>
+      </div>
+    </div>
+    <div class="container">
+      <div class="mx-auto max-w-md">
+        <br />
+        余额:
+        {{ balanceInquiry.data }}
+        <button
+          @click="drawal"
+          class="mt-3 w-full rounded-lg bg-violet-600 px-4 py-2 text-white hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          提现
+        </button>
       </div>
     </div>
   </section>
 </template>
-
-<style scoped>
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 1rem;
-}
-</style>
