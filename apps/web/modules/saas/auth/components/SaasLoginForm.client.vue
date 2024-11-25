@@ -134,18 +134,17 @@
     </div>
 
     <hr class="my-8" />
-    <form @submit.prevent="onSubmit" class="flex flex-col items-stretch gap-6">
+    <!-- <form @submit.prevent="onSubmit" class="flex flex-col items-stretch gap-6"> -->
       <!-- <SaasSigninModeSwitch class="w-full" v-model="signinMode" /> -->
 
-      <Alert v-if="errors.root" variant="error">
+      <!-- <Alert v-if="errors.root" variant="error">
         <AlertTriangleIcon class="size-6" />
         <AlertDescription>{{ errors.root }}</AlertDescription>
-      </Alert>
+      </Alert> -->
 
-      <FormField v-slot="{ componentField }" name="email">
+      <!-- <FormField v-slot="{ componentField }" name="email">
         <FormItem>
           <FormLabel for="address" required>
-            <!-- {{ $t("auth.login.email") }} -->
             Address
           </FormLabel>
           <Input
@@ -158,7 +157,7 @@
           />
           <FormMessage />
         </FormItem>
-      </FormField>
+      </FormField> -->
 
       <!-- <FormField
         v-if="signinMode === 'password'"
@@ -183,7 +182,7 @@
           </FormDescription>
         </FormItem>
       </FormField> -->
-
+<!-- 
       <Button
         class="w-full"
         type="submit"
@@ -195,22 +194,8 @@
             ? t("auth.login.submit")
             : t("auth.login.sendMagicLink")
         }}
-      </Button>
+      </Button> -->
 
-      <div class="text-center text-sm">
-        <span class="text-muted-foreground">
-          {{ $t("auth.login.dontHaveAnAccount") }}&nbsp;</span
-        >
-        <NuxtLinkLocale
-          :to="`/auth/signup${
-            invitationCode
-              ? `?invitationCode=${invitationCode}&email=${formValues.email}`
-              : ''
-          }`"
-        >
-          {{ $t("auth.login.createAnAccount") }} &rarr;
-        </NuxtLinkLocale>
-      </div>
-    </form>
+    <!-- </form> -->
   </div>
 </template>
