@@ -17,5 +17,8 @@
   ],
   "i18n-ally.localesPaths": ["packages/i18n/translations"],
   "i18n-ally.keystyle": "nested",
-  "i18n-ally.enabledFrameworks": ["vue"]
+  "i18n-ally.enabledFrameworks": [
+    "vue"
+  ],
+  "compile-hero.disable-compile-files-on-did-save-code": false
 }

@@ -5,6 +5,7 @@
 </script>
 
 <template>
+  <MarketingTest />
   <!-- <MarketingHero /> -->
   <MarketingFeatures />
   <MarketingFaqSection />

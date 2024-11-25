@@ -139,5 +139,5 @@
       {{ $t("auth.continueWithProvider", { provider: providerData.name }) }}
     </div>
   </Button>
-  <div>钱包地址: {{ walletAddress }}</div>
+  <!-- <div>钱包地址: {{ walletAddress }}</div> -->
 </template>
