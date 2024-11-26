@@ -15,7 +15,7 @@
             <NuxtImg
                     src="/images/logo.png"
                     alt="Our application"
-                    class="block rounded-xl dark:hidden w-10 h-10 object-cover"
+                    class="block rounded-xl dark:hidden w-16 h-16 object-cover"
                 />
           </a>
           <!-- MENU CONTENT 1 -->
@@ -34,17 +34,17 @@
               </a>
             </div>
             <a
-              href="https://tailwind-css-template-jetpack.vercel.app/Landing%20About"
+              href="#"
               class="font-inter font-medium rounded-lg lg:px-6 lg:py-4 lg:hover:bg-gray-50 lg:hover:text-gray-800"
               >Trade</a
             >
             <a
-              href="https://tailwind-css-template-jetpack.vercel.app/Landing%20Pricing"
+              href="#"
               class="font-inter font-medium rounded-lg pb-8 lg:px-6 lg:py-4 lg:pb-0 lg:hover:bg-gray-50 lg:hover:text-gray-800"
               >Stake</a
             >
             <a
-              href="https://tailwind-css-template-jetpack.vercel.app/Landing%20Pricing"
+              href="#"
               class="font-inter font-medium rounded-lg pb-8 lg:px-6 lg:py-4 lg:pb-0 lg:hover:bg-gray-50 lg:hover:text-gray-800"
               >Docs</a
             >
@@ -61,7 +61,7 @@
             > -->
             <NuxtLink href="/auth/login">
             <Button
-              class="relative mr-5 inline-block bg-black rounded-xl px-8 text-center font-semibold text-[#fff] [box-shadow:rgb(19,_83,_254)_6px_6px] hover:border-black md:mr-6"
+              class="relative mr-5 inline-block bg-[#fbf8f5] rounded-xl px-8 text-center font-semibold text-black [box-shadow:rgb(0,0,0)_6px_6px] hover:border-black md:mr-6"
               >Wallet</Button
             >
             </NuxtLink>
@@ -129,12 +129,12 @@
 
             <div class="flex items-center">
                 <Button
-                    class="mb-6 rounded-xl bg-black px-8  text-center font-semibold text-white [box-shadow:rgb(19,_83,_254)_6px_6px] md:mb-10 lg:mb-12" @click="handleToggleVoice"
+                    class="mb-6 rounded-xl bg-[#fbf8f5] px-8  text-center font-semibold text-black [box-shadow:rgb(0,0,0)_6px_6px] md:mb-10 lg:mb-12" @click="handleToggleVoice"
                     :loading="isUploading"
                     >{{ isUploading ? 'uploading...' : (isRecording ? 'Stop' : 'Record') }}</Button
                 >
                 <Button
-                    class="ml-6 mb-6 rounded-xl bg-black px-8  text-center font-semibold text-white [box-shadow:rgb(19,_83,_254)_6px_6px] md:mb-10 lg:mb-12" @click="handleWithDraw"
+                    class="ml-6 mb-6 rounded-xl bg-[#fbf8f5] px-8  text-center font-semibold text-black [box-shadow:rgb(0,0,0)_6px_6px] md:mb-10 lg:mb-12" @click="handleWithDraw"
                     :loading="isWithdraw"
                     >Withdraw</Button
                 >
@@ -150,31 +150,32 @@
                     data-aos-duration="900"
                     >
                     <div
-                        class="w-full mx-auto max-w-7xl  rounded-[48px] bg-cover bg-center bg-no-repeat py-10 px-5 text-white [box-shadow:rgb(106,_218,_255)_9px_9px] bg-[url('https://firebasestorage.googleapis.com/v0/b/flowspark-1f3e0.appspot.com/o/6391a6daa19785eb51dd3666_CTA%20(2)%20(1).svg?alt=media&token=b877deae-f9fb-4f75-ad69-cbc62e593e50')]"
+                        class="relative w-full mx-auto max-w-7xl   bg-cover bg-center bg-no-repeat py-10 px-5 text-black"
                     >
-                        <div class="mx-auto max-w-3xl text-center flex flex-col justify-center items-center">
+                        <img src="/images/trade-bg.png" class="absolute left-0 top-0 w-full h-full rounded-[48px] opacity-60" />
+                        <div class="relative mx-auto max-w-3xl text-center flex flex-col justify-center items-center">
                         <div class="mb-5  max-w-[720px] lg:mb-10">
                             <h2 class="mb-2 text-2xl font-semibold md:text-2xl">
                                 IDO ANNOUNCEMENT
                             </h2>
                             <div class="mx-auto max-w-[630px] flex flex-col justify-center items-center">
-                            <p class="text-[#e0e0e0] mb-2">
+                            <p class="text-black mb-2 bg-[#fbf8f5] px-4 py-2 rounded-lg">
                                 Powering the Next-Gen Subnet on Bittensor
                             </p>
                             <h3 class="font-semibold">Fundraising Goal</h3>
-                            <p class="text-3xl font-semibold py-20">$TAO <span class="ml-2">{{balanceInquiry.withdrawable || 0}}</span></p>
+                            <p class="text-4xl font-semibold py-16">$TAO <span class="ml-2">{{balanceInquiry.withdrawable || 0}}</span></p>
 
                             <Button
-                            class="ounded-xl bg-black px-8 py-4 font-semibold text-white [box-shadow:rgb(255,_255,_255)_6px_6px]"
+                            class="ounded-xl bg-[#fbf8f5] text-black px-8 py-4 font-semibold  [box-shadow:rgb(0,0,0)_6px_6px]"
                             >View Details</Button
                         >
                             </div>
                         </div>
-                        <div class="text-3xl font-semibold mb-5 lg:mb-10">
-                            TAO <span class="mx-1 font-normal text-xl">Coming Soon</span>  WTAO
+                        <div class=" text-2xl font-semibold py-8 lg:mb-10">
+                            <span class="bg-white rounded-2xl p-2 [box-shadow:rgb(0,0,0)_6px_6px]">TAO</span> <span class="mx-1 font-normal text-xl">Coming Soon</span> <span class="bg-white rounded-2xl p-2 [box-shadow:rgb(0,0,0)_6px_6px]">WTAO</span>
                         </div>
                         <Button
-                            class="rounded-xl bg-black px-8 mb-4 py-4 font-semibold text-white [box-shadow:rgb(255,_255,_255)_6px_6px]"
+                            class="rounded-xl bg-[#fbf8f5]  px-8 mb-4 py-4 font-semibold text-black [box-shadow:rgb(0,0,0)_6px_6px]"
                             >Explore Hash</Button
                         >
                         </div>
@@ -434,7 +435,7 @@
               <NuxtImg
                     src="/images/logo.png"
                     alt="Our application"
-                    class="block rounded-xl dark:hidden w-10 h-10 object-cover"
+                    class="block rounded-xl dark:hidden w-20 h-20 object-cover"
                 />
               </a>
               <p class="font-inter my-4 max-w-[350px] text-base font-light">
@@ -623,6 +624,10 @@ const handleWithDraw = async () => {
         console.log(res);
         const {data } = await apiCaller.billing.balanceInquiry.useQuery();
         balanceInquiry.value = data as unknown as balanceInquiryType;
+        toast({
+            variant: "success",
+            title: `Success!`,
+        });
     } catch (error) {
         console.log(error)
         toast({
@@ -658,6 +663,10 @@ const handleAudioResult = async (audioRes: Blob) => {
         audio: result.filename,
       });
       if (res) {
+        toast({
+            variant: "success",
+            title: `Upload Success!`,
+        });
         balanceInquiry.value.withdrawable += res.score
       }
 
@@ -714,6 +723,10 @@ const fetchScore = (type: TaskType, cb?: Function) => {
         });
     }).then(res => {
         console.log(res)
+        toast({
+            variant: "success",
+            title: `Success!`,
+        });
         fetchBalance()
         typeof cb === 'function' && cb()
     });

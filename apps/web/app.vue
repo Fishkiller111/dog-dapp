@@ -1,3 +1,4 @@
+
 <script setup lang="ts">
   import { ConfigProvider } from "radix-vue";
   import { configure } from "vee-validate";
@@ -54,5 +55,13 @@
 <style>
 html, body {
     /* --colors-primary-rgb: 251,248,245 */
+    --colors-background-rgb: 245,245,248;
+    --colors-border-rgb: 245,245,248;
+    .bg-gradient-to-b {
+        background-image: none;
+    }
+    .dark\:hidden {
+        display: block;
+    }
 }
 </style>

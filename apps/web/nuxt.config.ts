@@ -8,6 +8,11 @@ export default defineNuxtConfig({
   devtools: {
     enabled: true,
   },
+  tailwindcss: {
+    config: {
+      darkMode: false as any,
+    },
+  },
 
   alias: {
     "@config": path.resolve(__dirname, path.join("..", "..", "config")),
@@ -124,9 +129,9 @@ export default defineNuxtConfig({
 
   // @nuxtjs/color-mode
   colorMode: {
-    preference: "system",
+    preference: "light",
     fallback: "light",
-    classSuffix: "",
+    classSuffix: "DOT_USE",
     storageKey: "NUXT_COLOR_MODE",
   },
 
