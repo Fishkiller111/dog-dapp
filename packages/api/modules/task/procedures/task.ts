@@ -71,3 +71,71 @@ export const submitTasks = protectedProcedure
 
     return task;
   });
+
+export const getTaskStatusList = protectedProcedure.query(
+  async ({ ctx: { user } }) => {
+    const userId = user.id;
+    try {
+      // 定义任务类型组
+      const permanentTaskTypes = [
+        TaskType.JOIN_DISCORD,
+        TaskType.JOIN_TELEGRAM,
+      ] as const;
+      type PermanentTaskType = (typeof permanentTaskTypes)[number];
+
+      const isPermanentTask = (type: TaskType): type is PermanentTaskType => {
+        return permanentTaskTypes.includes(type as PermanentTaskType);
+      };
+
+      // 获取永久任务状态
+      const permanentTasksStatus = await db.task.findMany({
+        where: {
+          userId,
+          type: {
+            in: Array.from(permanentTaskTypes),
+          },
+          status: TaskStatus.DOEN,
+        },
+      });
+
+      // 获取每日任务状态
+      const dailyTasksStatus = await db.task.findMany({
+        where: {
+          userId,
+          type: {
+            in: [
+              TaskType.DAILY_CHECKIN,
+              TaskType.SHARE_DISCORD,
+              TaskType.SHARE_TELEGRAM,
+            ],
+          },
+          status: TaskStatus.DOEN,
+          createdAt: {
+            gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+            lt: new Date(new Date().setUTCHours(24, 0, 0, 0)),
+          },
+        },
+      });
+
+      // 生成状态列表
+      const allTaskStatus = Object.values(TaskType).map((taskType) => ({
+        type: taskType,
+        status: isPermanentTask(taskType)
+          ? permanentTasksStatus.some((task) => task.type === taskType)
+            ? TaskStatus.DOEN
+            : TaskStatus.PENDING
+          : dailyTasksStatus.some((task) => task.type === taskType)
+          ? TaskStatus.DOEN
+          : TaskStatus.PENDING,
+      }));
+
+      return allTaskStatus;
+    } catch (error) {
+      console.error("Error getting task status list:", error);
+      return Object.values(TaskType).map((type) => ({
+        type,
+        status: TaskStatus.PENDING,
+      }));
+    }
+  },
+);
