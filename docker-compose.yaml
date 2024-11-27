@@ -1,0 +1,37 @@
+version: "3.8"
+services:
+  dog-dapp:
+    image: ccr.ccs.tencentyun.com/c2star/k0a1a-temp:dog-0.0.1
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.local
+    volumes:
+      - .env.local:/app/.env.local
+    depends_on:
+      - mysql
+    networks:
+      - dog-dapp
+
+  mysql:
+    image: mysql:8.2.0
+    container_name: mysql-dog
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "FUk4UDod65TabzH"
+    ports:
+      - 3308:3306
+    volumes:
+      - ./data/:/var/lib/mysql
+      - ./conf/my.cnf:/etc/my.cnf
+      - ./log:/var/log/mysql
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    command:
+      - --mysql-native-password=on
+    networks:
+      - dog-dapp
+
+networks:
+  dog-dapp:
+    driver: bridge
