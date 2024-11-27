@@ -1,6 +1,6 @@
 
 <template>
-    <div class="relative">
+    <div class="relative bg-[#FBF8F5]">
       <!-- Navbar Dropdown 1 row -->
       <nav
         class="font-inter mx-auto h-auto w-full mb-12 lg:sticky top-0 z-20 bg-[#fff]"
@@ -11,12 +11,13 @@
           class="flex max-w-7xl flex-col px-5 py-6 lg:flex-row lg:items-center lg:justify-between md:px-10 lg:py-4 mx-auto"
         >
           <!-- SVG LOGO - YOU CAN REPLACE THIS -->
-          <a href="/">
+          <a href="/" class="flex items-center">
             <NuxtImg
                     src="/images/logo.png"
                     alt="Our application"
                     class="block rounded-xl dark:hidden w-16 h-16 object-cover"
                 />
+                <span class=" font-[Limelight] font-bold ml-2 text-2xl">WOOFAI</span>
           </a>
           <!-- MENU CONTENT 1 -->
           <div
@@ -61,7 +62,7 @@
             > -->
             <NuxtLink href="/auth/login">
             <Button
-              class="relative mr-5 inline-block bg-[#fbf8f5] rounded-xl px-8 text-center font-semibold text-black [box-shadow:rgb(0,0,0)_6px_6px] hover:border-black md:mr-6"
+              class="relative mr-5 inline-block bg-[#fbf8f5] rounded-xl px-8 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_6px] hover:border-[#0C0E0C] md:mr-6 border border-[#0C0E0C]"
               >Wallet</Button
             >
             </NuxtLink>
@@ -122,19 +123,19 @@
                 <NuxtImg
                     src="/images/home.gif"
                     alt="Our application"
-                    class="block w-full rounded-xl mb-10 dark:hidden"
+                    class="block w-64 rounded-xl mb-20 dark:hidden"
                 />
 
                 <AudioRecorder ref="audioRecorder" @audioResult="handleAudioResult" />
 
             <div class="flex items-center">
                 <Button
-                    class="mb-6 rounded-xl bg-[#fbf8f5] px-8  text-center font-semibold text-black [box-shadow:rgb(0,0,0)_6px_6px] md:mb-10 lg:mb-12" @click="handleToggleVoice"
+                    class="mb-6 rounded-xl bg-[#fbf8f5] px-12 py-6  text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] md:mb-10 lg:mb-12 border border-[#0C0E0C]" @click="handleToggleVoice"
                     :loading="isUploading"
                     >{{ isUploading ? 'uploading...' : (isRecording ? 'Stop' : 'Record') }}</Button
                 >
                 <Button
-                    class="ml-6 mb-6 rounded-xl bg-[#fbf8f5] px-8  text-center font-semibold text-black [box-shadow:rgb(0,0,0)_6px_6px] md:mb-10 lg:mb-12" @click="handleWithDraw"
+                    class="ml-6 mb-6 rounded-xl bg-[#fbf8f5] px-12 py-6  text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] md:mb-10 lg:mb-12 border border-[#0C0E0C]" @click="handleWithDraw"
                     :loading="isWithdraw"
                     >Withdraw</Button
                 >
@@ -150,7 +151,7 @@
                     data-aos-duration="900"
                     >
                     <div
-                        class="relative w-full mx-auto max-w-7xl   bg-cover bg-center bg-no-repeat py-10 px-5 text-black"
+                        class="relative w-full mx-auto max-w-7xl   bg-cover bg-center bg-no-repeat py-10 px-5 text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] rounded-[48px] border border-[#0C0E0C]"
                     >
                         <img src="/images/trade-bg.png" class="absolute left-0 top-0 w-full h-full rounded-[48px] opacity-60" />
                         <div class="relative mx-auto max-w-3xl text-center flex flex-col justify-center items-center">
@@ -159,23 +160,23 @@
                                 IDO ANNOUNCEMENT
                             </h2>
                             <div class="mx-auto max-w-[630px] flex flex-col justify-center items-center">
-                            <p class="text-black mb-2 bg-[#fbf8f5] px-4 py-2 rounded-lg">
+                            <p class="text-[#0C0E0C] mb-2 bg-[#fbf8f5] px-4 py-2 rounded-lg">
                                 Powering the Next-Gen Subnet on Bittensor
                             </p>
                             <h3 class="font-semibold">Fundraising Goal</h3>
-                            <p class="text-4xl font-semibold py-16">$TAO <span class="ml-2">{{balanceInquiry.withdrawable || 0}}</span></p>
+                            <p class="text-4xl font-semibold py-16">$TAO <span class="ml-2">99999</span></p>
 
                             <Button
-                            class="ounded-xl bg-[#fbf8f5] text-black px-8 py-4 font-semibold  [box-shadow:rgb(0,0,0)_6px_6px]"
+                            class="ounded-xl bg-[#fbf8f5] text-[#0C0E0C] px-8 py-4 font-semibold  [box-shadow:rgb(0,0,0)_0px_4px] border border-[#0C0E0C]"
                             >View Details</Button
                         >
                             </div>
                         </div>
                         <div class=" text-2xl font-semibold py-8 lg:mb-10">
-                            <span class="bg-white rounded-2xl p-2 [box-shadow:rgb(0,0,0)_6px_6px]">TAO</span> <span class="mx-1 font-normal text-xl">Coming Soon</span> <span class="bg-white rounded-2xl p-2 [box-shadow:rgb(0,0,0)_6px_6px]">WTAO</span>
+                            <span class="bg-white rounded-2xl p-2 [box-shadow:rgb(0,0,0)_0px_4px]">TAO</span> <span class="mx-1 font-normal text-xl">Coming Soon</span> <span class="bg-white rounded-2xl p-2 [box-shadow:rgb(0,0,0)_0px_4px]">WTAO</span>
                         </div>
                         <Button
-                            class="rounded-xl bg-[#fbf8f5]  px-8 mb-4 py-4 font-semibold text-black [box-shadow:rgb(0,0,0)_6px_6px]"
+                            class="rounded-xl bg-[#fbf8f5]  px-8 mb-4 py-4 font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] border border-[#0C0E0C]"
                             >Explore Hash</Button
                         >
                         </div>
@@ -199,11 +200,11 @@
           <div class="mx-auto w-full max-w-3xl">
             <!-- Component -->
             <div class="text-center">
-              <p class="uppercase text-[#1353fe]">3 easy steps</p>
-              <h2 class="text-3xl font-semibold md:text-5xl">
+              <p class="uppercase text-[#000] pb-2">3 easy steps</p>
+              <h2 class="text-3xl font-semibold md:text-3xl ">
                 How it mine
                 <span
-                  class="bg-cover bg-center bg-no-repeat px-4 text-white bg-[url('https://assets.website-files.com/63904f663019b0d8edf8d57c/639156ce1c70c97aeb755c8a_Rectangle%2010%20(1).svg')]"
+                  class="bg-cover bg-center bg-no-repeat px-4 text-white bg-[#cabdb0]"
                   >$WOOF</span
                 >
               </h2>
@@ -226,7 +227,7 @@
               class="relative flex flex-col items-center gap-4 p-8 text-center"
             >
               <div
-                class="mb-5 flex max-w-[400px] flex-col items-center justify-center rounded-xl border border-solid border-black bg-white px-8 py-5 [box-shadow:rgb(0,_0,_0)_4px_4px] md:mb-6 lg:mb-8"
+                class="mb-5 flex max-w-[400px] flex-col items-center justify-center rounded-xl border border-solid border-[#0C0E0C] bg-white px-8 py-5 [box-shadow:rgb(0,_0,_0)_4px_4px] md:mb-6 lg:mb-8"
               >
                 <p class="text-xl font-bold">1</p>
               </div>
@@ -245,7 +246,7 @@
               class="relative flex flex-col items-center gap-4 p-8 text-center"
             >
               <div
-                class="mb-5 flex max-w-[400px] flex-col items-center justify-center rounded-xl border border-solid border-black bg-white px-8 py-5 [box-shadow:rgb(0,_0,_0)_4px_4px] md:mb-6 lg:mb-8"
+                class="mb-5 flex max-w-[400px] flex-col items-center justify-center rounded-xl border border-solid border-[#0C0E0C] bg-white px-8 py-5 [box-shadow:rgb(0,_0,_0)_4px_4px] md:mb-6 lg:mb-8"
               >
                 <p class="text-xl font-bold">2</p>
               </div>
@@ -264,7 +265,7 @@
               class="relative flex flex-col items-center gap-4 p-8 text-center"
             >
               <div
-                class="mb-5 flex max-w-[400px] flex-col items-center justify-center rounded-xl border border-solid border-black bg-white px-8 py-5 [box-shadow:rgb(0,_0,_0)_4px_4px] md:mb-6 lg:mb-8"
+                class="mb-5 flex max-w-[400px] flex-col items-center justify-center rounded-xl border border-solid border-[#0C0E0C] bg-white px-8 py-5 [box-shadow:rgb(0,_0,_0)_4px_4px] md:mb-6 lg:mb-8"
               >
                 <p class="text-xl font-bold">3</p>
               </div>
@@ -284,16 +285,12 @@
         <div class="max-w-7xl px-5 py-16 md:px-10 md:py-16 lg:py-24 mx-auto">
           <!-- Heading Div -->
           <div
-            class="mx-auto w-full max-w-3xl text-center"
+            class="mx-auto w-full max-w-2xl text-center"
             data-aos="fade-up"
             data-aos-duration="900"
           >
-            <h2 class="text-3xl font-semibold md:text-5xl">
-                Unlock More Mining Chances By Completing These
-              <span
-                class="bg-cover bg-center bg-no-repeat px-4 text-white bg-[url('https://assets.website-files.com/63904f663019b0d8edf8d57c/63915f9749aaab0572c48dae_Rectangle%2018.svg')]"
-                >Tasks</span
-              >
+            <h2 class="text-3xl font-semibold md:text-3xl">
+                Unlock More Mining Chances By Completing These Tasks
             </h2>
             <div class="mx-auto mb-8 mt-4 max-w-[528px] md:mb-12 lg:mb-16">
               <!-- <p class="text-[#636262]">
@@ -310,7 +307,7 @@
           >
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-black p-8 [box-shadow:rgb(0,_0,_0)_9px_9px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
               @click="handleTab('Daily')"
             >
               <div
@@ -329,7 +326,7 @@
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-black p-8 [box-shadow:rgb(0,_0,_0)_9px_9px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
               @click="handleTab('Discord')"
             >
               <div
@@ -347,7 +344,7 @@
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-black p-8 [box-shadow:rgb(0,_0,_0)_9px_9px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
               @click="handleTab('Trade')"
             >
               <div
@@ -362,7 +359,7 @@
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-black p-8 [box-shadow:rgb(0,_0,_0)_9px_9px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
               @click="handleTab('Invitation')"
             >
               <div
@@ -379,7 +376,7 @@
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-black p-8 [box-shadow:rgb(0,_0,_0)_9px_9px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
               @click="handleTab('Telegram')"
             >
               <div
@@ -403,7 +400,7 @@
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-black p-8 [box-shadow:rgb(0,_0,_0)_9px_9px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
               @click="handleTab('Stake')"
             >
               <div
@@ -430,13 +427,15 @@
               <!-- LOGO -->
               <a
                 href="#"
-                class="mb-12 inline-block max-w-full font-bold text-[#1353fe]"
+                class="mb-12 flex items-center inline-block max-w-full font-bold text-[#0C0E0C]"
               >
               <NuxtImg
                     src="/images/logo.png"
                     alt="Our application"
                     class="block rounded-xl dark:hidden w-20 h-20 object-cover"
                 />
+                <span class=" font-[Limelight] font-bold ml-2 text-2xl">WOOFAI</span>
+
               </a>
               <p class="font-inter my-4 max-w-[350px] text-base font-light">
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit ut al
