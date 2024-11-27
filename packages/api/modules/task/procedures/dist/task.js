@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.submitTasks = void 0;
+exports.getTaskStatusList = exports.submitTasks = void 0;
 var zod_1 = require("zod");
 var trpc_1 = require("../../trpc");
 var client_1 = require("@prisma/client"); // 或者从你定义这些枚举的地方导入
@@ -106,6 +106,77 @@ exports.submitTasks = trpc_1.protectedProcedure
                         throw new Error("Failed to create task");
                     }
                     return [2 /*return*/, task];
+            }
+        });
+    });
+});
+exports.getTaskStatusList = trpc_1.protectedProcedure.query(function (_a) {
+    var user = _a.ctx.user;
+    return __awaiter(void 0, void 0, void 0, function () {
+        var userId, permanentTaskTypes_1, isPermanentTask_1, permanentTasksStatus_1, dailyTasksStatus_1, allTaskStatus, error_1;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    userId = user.id;
+                    _b.label = 1;
+                case 1:
+                    _b.trys.push([1, 4, , 5]);
+                    permanentTaskTypes_1 = [
+                        client_1.TaskType.JOIN_DISCORD,
+                        client_1.TaskType.JOIN_TELEGRAM,
+                    ];
+                    isPermanentTask_1 = function (type) {
+                        return permanentTaskTypes_1.includes(type);
+                    };
+                    return [4 /*yield*/, database_1.db.task.findMany({
+                            where: {
+                                userId: userId,
+                                type: {
+                                    "in": Array.from(permanentTaskTypes_1)
+                                },
+                                status: client_1.TaskStatus.DOEN
+                            }
+                        })];
+                case 2:
+                    permanentTasksStatus_1 = _b.sent();
+                    return [4 /*yield*/, database_1.db.task.findMany({
+                            where: {
+                                userId: userId,
+                                type: {
+                                    "in": [
+                                        client_1.TaskType.DAILY_CHECKIN,
+                                        client_1.TaskType.SHARE_DISCORD,
+                                        client_1.TaskType.SHARE_TELEGRAM,
+                                    ]
+                                },
+                                status: client_1.TaskStatus.DOEN,
+                                createdAt: {
+                                    gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+                                    lt: new Date(new Date().setUTCHours(24, 0, 0, 0))
+                                }
+                            }
+                        })];
+                case 3:
+                    dailyTasksStatus_1 = _b.sent();
+                    allTaskStatus = Object.values(client_1.TaskType).map(function (taskType) { return ({
+                        type: taskType,
+                        status: isPermanentTask_1(taskType)
+                            ? permanentTasksStatus_1.some(function (task) { return task.type === taskType; })
+                                ? client_1.TaskStatus.DOEN
+                                : client_1.TaskStatus.PENDING
+                            : dailyTasksStatus_1.some(function (task) { return task.type === taskType; })
+                                ? client_1.TaskStatus.DOEN
+                                : client_1.TaskStatus.PENDING
+                    }); });
+                    return [2 /*return*/, allTaskStatus];
+                case 4:
+                    error_1 = _b.sent();
+                    console.error("Error getting task status list:", error_1);
+                    return [2 /*return*/, Object.values(client_1.TaskType).map(function (type) { return ({
+                            type: type,
+                            status: client_1.TaskStatus.PENDING
+                        }); })];
+                case 5: return [2 /*return*/];
             }
         });
     });

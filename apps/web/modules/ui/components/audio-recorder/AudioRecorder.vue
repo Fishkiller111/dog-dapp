@@ -76,8 +76,8 @@
       })
 
       const visualSettings: AudioVisualSettings = {
-        waveformColor: '#fbf8f5',
-        backgroundColor: '#F6F6F8',
+        waveformColor: '#FBF8F5',
+        backgroundColor: '#FBF8F5',
         fftSize: 4096,
         smoothingTimeConstant: 0.8
       }

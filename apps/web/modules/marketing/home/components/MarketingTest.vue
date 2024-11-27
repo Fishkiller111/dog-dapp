@@ -76,8 +76,10 @@
     console.log(res);
     balanceInquiry = await apiCaller.billing.balanceInquiry.useQuery();
   }
+  // 获取任务状态
+  const taskStatusList = await apiCaller.task.getTaskStatusList.useQuery()
+  console.log(111111, taskStatusList);
   
-
 </script>
 
 <template>
@@ -144,6 +146,11 @@
         >
           提现
         </button>
+      </div>
+      <div class="mx-auto max-w-md">
+        <br />
+        任务状态:
+        {{ taskStatusList.data }}
       </div>
     </div>
   </section>

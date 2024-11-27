@@ -2,7 +2,7 @@
   import { ethers } from "ethers";
 
   const { apiCaller } = useApiCaller();
-  
+
   export const oAuthProviders: {
     [key: string]: { name: string; icon: Component };
   } = {
@@ -120,11 +120,16 @@
     } finally {
       isConnecting.value = false;
     }
-    await apiCaller.auth.loginWithAddress.mutate({
-      walletAddress: walletAddress.value,
-    });
+    try {
+        await apiCaller.auth.loginWithAddress.mutate({
+            walletAddress: walletAddress.value,
+        });
+        sessionStorage.setItem('__USER_TOKEN__', walletAddress.value)
+        navigateTo("/");
+    } catch (error) {
 
-    navigateTo("/");
+    }
+
   };
 </script>
 

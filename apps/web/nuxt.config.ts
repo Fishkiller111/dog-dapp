@@ -174,4 +174,12 @@ export default defineNuxtConfig({
       ErrorMessage: "ErrorMessage",
     },
   },
+
+  nitro: {
+    routeRules: {
+      "/api/**": {
+        proxy: "https://woofai.io/api/**",
+      },
+    },
+  },
 });
