@@ -99,7 +99,7 @@
   const login = async () => {
     const ethereum = (window as any).ethereum;
     if (!ethereum) {
-      alert("请安装 MetaMask!");
+      alert("Please install MetaMask!");
       return
     }
 

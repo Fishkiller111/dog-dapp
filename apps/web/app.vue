@@ -57,6 +57,7 @@ html, body {
     /* --colors-primary-rgb: 251,248,245 */
     --colors-background-rgb: 245,245,248;
     --colors-border-rgb: 245,245,248;
+    --colors-primary-rgb: 202,189,176;
     .bg-gradient-to-b {
         background-image: none;
     }
