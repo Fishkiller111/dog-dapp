@@ -55,7 +55,7 @@ exports.generateProductNames = trpc_1.protectedProcedure
     .query(function (_a) {
     var audio = _a.input.audio, user = _a.ctx.user;
     return __awaiter(void 0, void 0, void 0, function () {
-        var scoreTotalCount, scoreCount, taskCount, uploadDir, filePath, fileBuffer, formData, apiUrl, response, tempData, data, res, error_1;
+        var scoreTotalCount, scoreCount, taskCount, uploadDir, filePath, fileBuffer, formData, apiUrl, response, tempData, data, tokenMap, res, error_1;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -152,11 +152,18 @@ exports.generateProductNames = trpc_1.protectedProcedure
                         // 是狗叫就随机给1～5分，非狗叫就给0分
                         score: tempData.result === "非狗叫" ? 0 : Math.floor(Math.random() * 5) + 1
                     };
+                    tokenMap = {
+                        0: 0,
+                        1: 5,
+                        2: 10,
+                        3: 15,
+                        4: 20
+                    };
                     return [4 /*yield*/, database_1.db.score
                             .create({
                             data: {
                                 userId: user.id,
-                                score: data.score
+                                score: tokenMap[data.score]
                             }
                         })["catch"](function (error) {
                             console.error(error);
@@ -164,7 +171,7 @@ exports.generateProductNames = trpc_1.protectedProcedure
                 case 6:
                     res = _b.sent();
                     return [2 /*return*/, {
-                            result: tempData.result === "非狗叫",
+                            result: tempData.result !== "非狗叫",
                             score: data.score
                         }];
                 case 7:

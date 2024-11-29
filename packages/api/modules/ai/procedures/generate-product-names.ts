@@ -124,11 +124,24 @@ export const generateProductNames = protectedProcedure
         score:
           tempData.result === "非狗叫" ? 0 : Math.floor(Math.random() * 5) + 1,
       };
+
+      // 0～1: 0
+      // 1～2:5
+      // 2～3:10
+      // 3～4:15
+      // 4～5:20
+      const tokenMap = {
+        0: 0,
+        1: 5,
+        2: 10,
+        3: 15,
+        4: 20,
+      };
       const res = await db.score
         .create({
           data: {
             userId: user.id,
-            score: data.score,
+            score: tokenMap[data.score],
           },
         })
         .catch((error) => {
@@ -136,7 +149,7 @@ export const generateProductNames = protectedProcedure
         });
 
       return {
-        result: tempData.result === "非狗叫",
+        result: tempData.result !== "非狗叫",
         score: data.score,
       };
     } catch (error) {

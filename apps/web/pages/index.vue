@@ -106,15 +106,8 @@ const remainingScoreCount = ref({
     total: 0,
     used: 0,
 })
-const fetchTaskStatus = async () => {
-    const taskStatusList = await apiCaller.task.getTaskStatusList.query().catch((error) => {
-        toast({
-            variant: "error",
-            title: `${(error as Error).message}`,
-        });
-        return []
-    });
-    const remainingScoreCountRes =  await apiCaller.ai.getRemainingScoreCount.query().catch((error) => {
+const getRemainingScoreCount = async ()=> {
+  const remainingScoreCountRes =  await apiCaller.ai.getRemainingScoreCount.query().catch((error) => {
         console.log('getRemainingScoreCount error', error);
         return {
           remaining: 0,
@@ -123,7 +116,18 @@ const fetchTaskStatus = async () => {
           used: 0,
         }
     });
-    remainingScoreCount.value = remainingScoreCountRes
+  remainingScoreCount.value = remainingScoreCountRes
+  
+}
+const fetchTaskStatus = async () => {
+    const taskStatusList = await apiCaller.task.getTaskStatusList.query().catch((error) => {
+        toast({
+            variant: "error",
+            title: `${(error as Error).message}`,
+        });
+        return []
+    });
+    await getRemainingScoreCount()
     
     if (!taskStatusList || taskStatusList.length <= 0) {
         return;
@@ -140,6 +144,7 @@ const fetchBalance = async () => {
             title: `${(error as Error).message}`,
         });
     });
+    
     if (!res) {
       console.log('fetchBalance error');
       return;
@@ -153,7 +158,9 @@ const handleToggleVoice = (): void => {
     handleSessionCb(() => {
         isRecording.value = !isRecording.value
         audioRecorder.value?.toggleRecording()
+        // getRemainingScoreCount()
     })
+    // getRemainingScoreCount()
 }
 
 const handleWithDraw = async () => {
@@ -206,12 +213,16 @@ const handleAudioResult = async (audioRes: Blob) => {
       const res = await apiCaller.ai.generateProductNames.query({
         audio: result.filename,
       });
+      
       if (res) {
         toast({
             variant: "success",
-            title: `Upload Success!`,
+            title: res.result ? `Thank you for uploading the dog bark sound, you have received ${res.score} tokens.`:`The uploaded sound is not a dog barking.`,
         });
+        console.log(444444444444, res);
+        
         fetchBalance()
+        await getRemainingScoreCount()
       }
 
     } catch (error) {
