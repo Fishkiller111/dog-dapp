@@ -89,7 +89,7 @@
             state.value.audioChunks = []
             if (currentSecond < minSecond) {
                 clearVoiceTimer()
-                alert(`Record at least 3 seconds${minSecond}`)
+                alert(`Record at least ${minSecond} seconds`)
             } else {
                 emits('audioResult', audioBlob)
             }

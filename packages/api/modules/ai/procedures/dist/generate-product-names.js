@@ -36,7 +36,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.generateProductNames = void 0;
+exports.getRemainingScoreCount = exports.generateProductNames = void 0;
 var path = require("node:path");
 var fs = require("node:fs");
 var zod_1 = require("zod");
@@ -59,7 +59,7 @@ exports.generateProductNames = trpc_1.protectedProcedure
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
-                    scoreTotalCount = 3;
+                    scoreTotalCount = 10;
                     return [4 /*yield*/, database_1.db.score.count({
                             where: {
                                 // 用户ID
@@ -187,6 +187,78 @@ exports.generateProductNames = trpc_1.protectedProcedure
                     }
                     return [7 /*endfinally*/];
                 case 9: return [2 /*return*/];
+            }
+        });
+    });
+});
+exports.getRemainingScoreCount = trpc_1.protectedProcedure
+    .output(zod_1.z.object({
+    remaining: zod_1.z.number(),
+    total: zod_1.z.number(),
+    used: zod_1.z.number(),
+    taskBonus: zod_1.z.number()
+}))
+    .query(function (_a) {
+    var user = _a.ctx.user;
+    return __awaiter(void 0, void 0, void 0, function () {
+        var scoreTotalCount, scoreCount, taskCount, totalCount, remainingCount;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    scoreTotalCount = 10;
+                    return [4 /*yield*/, database_1.db.score.count({
+                            where: {
+                                userId: user.id,
+                                createdAt: {
+                                    gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+                                    lt: new Date(new Date().setUTCHours(24, 0, 0, 0))
+                                }
+                            }
+                        })];
+                case 1:
+                    scoreCount = _b.sent();
+                    return [4 /*yield*/, database_1.db.task.count({
+                            where: {
+                                userId: user.id,
+                                status: client_1.TaskStatus.DONE,
+                                OR: [
+                                    // 对于每日任务（签到和分享），只统计今天完成的
+                                    {
+                                        type: {
+                                            "in": [
+                                                client_1.TaskType.DAILY_CHECKIN,
+                                                client_1.TaskType.SHARE_DISCORD,
+                                                client_1.TaskType.SHARE_TELEGRAM,
+                                            ]
+                                        },
+                                        createdAt: {
+                                            gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+                                            lt: new Date(new Date().setUTCHours(24, 0, 0, 0))
+                                        }
+                                    },
+                                    // 对于永久任务（加入Discord和Telegram），只要是今天完成的就统计
+                                    {
+                                        type: {
+                                            "in": [client_1.TaskType.JOIN_DISCORD, client_1.TaskType.JOIN_TELEGRAM]
+                                        },
+                                        createdAt: {
+                                            gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+                                            lt: new Date(new Date().setUTCHours(24, 0, 0, 0))
+                                        }
+                                    },
+                                ]
+                            }
+                        })];
+                case 2:
+                    taskCount = _b.sent();
+                    totalCount = scoreTotalCount + taskCount;
+                    remainingCount = totalCount - scoreCount;
+                    return [2 /*return*/, {
+                            remaining: Math.max(0, remainingCount),
+                            total: totalCount,
+                            used: scoreCount,
+                            taskBonus: taskCount
+                        }];
             }
         });
     });

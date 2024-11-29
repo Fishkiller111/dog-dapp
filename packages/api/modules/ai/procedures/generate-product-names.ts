@@ -23,7 +23,7 @@ export const generateProductNames = protectedProcedure
   )
   .query(async ({ input: { audio }, ctx: { user } }) => {
     // 1. 查询评分记录和任务记录，确定用户还有的评分次数
-    let scoreTotalCount = 3; // 每个用户的默认评分次数
+    let scoreTotalCount = 10; // 每个用户的默认评分次数
     // 查询已经评分的次数
     const scoreCount = await db.score.count({
       where: {
@@ -156,4 +156,73 @@ export const generateProductNames = protectedProcedure
         // 不抛出删除文件的错误，因为主要操作已经完成
       }
     }
+  });
+
+export const getRemainingScoreCount = protectedProcedure
+  .output(
+    z.object({
+      remaining: z.number(),
+      total: z.number(),
+      used: z.number(),
+      taskBonus: z.number(),
+    }),
+  )
+  .query(async ({ ctx: { user } }) => {
+    const scoreTotalCount = 10; // 每个用户的默认评分次数
+
+    // 查询已经评分的次数
+    const scoreCount = await db.score.count({
+      where: {
+        userId: user.id,
+        createdAt: {
+          gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+          lt: new Date(new Date().setUTCHours(24, 0, 0, 0)),
+        },
+      },
+    });
+
+    // 查询任务记录获取额外次数
+    const taskCount = await db.task.count({
+      where: {
+        userId: user.id,
+        status: TaskStatus.DONE,
+        OR: [
+          // 对于每日任务（签到和分享），只统计今天完成的
+          {
+            type: {
+              in: [
+                TaskType.DAILY_CHECKIN,
+                TaskType.SHARE_DISCORD,
+                TaskType.SHARE_TELEGRAM,
+              ],
+            },
+            createdAt: {
+              gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+              lt: new Date(new Date().setUTCHours(24, 0, 0, 0)),
+            },
+          },
+          // 对于永久任务（加入Discord和Telegram），只要是今天完成的就统计
+          {
+            type: {
+              in: [TaskType.JOIN_DISCORD, TaskType.JOIN_TELEGRAM],
+            },
+            createdAt: {
+              gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
+              lt: new Date(new Date().setUTCHours(24, 0, 0, 0)),
+            },
+          },
+        ],
+      },
+    });
+
+    // 计算总可用次数和剩余次数
+    const totalCount = scoreTotalCount + taskCount;
+    const remainingCount = totalCount - scoreCount;
+
+    return {
+      remaining: Math.max(0, remainingCount), // 确保不会返回负数
+      total: totalCount, // 总次数（基础次数+任务奖励）
+      used: scoreCount, // 已使用次数
+      taskBonus: taskCount, // 任务奖励次数
+    };
   });

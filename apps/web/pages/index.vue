@@ -100,7 +100,12 @@ const handleSessionCb = (cb?:Function) => {
     typeof cb === 'function' && cb()
 }
 
-
+const remainingScoreCount = ref({
+    remaining: 0,
+    taskBonus: 0,
+    total: 0,
+    used: 0,
+})
 const fetchTaskStatus = async () => {
     const taskStatusList = await apiCaller.task.getTaskStatusList.query().catch((error) => {
         toast({
@@ -109,6 +114,17 @@ const fetchTaskStatus = async () => {
         });
         return []
     });
+    const remainingScoreCountRes =  await apiCaller.ai.getRemainingScoreCount.query().catch((error) => {
+        console.log('getRemainingScoreCount error', error);
+        return {
+          remaining: 0,
+          taskBonus: 0,
+          total: 0,
+          used: 0,
+        }
+    });
+    remainingScoreCount.value = remainingScoreCountRes
+    
     if (!taskStatusList || taskStatusList.length <= 0) {
         return;
     }
@@ -445,8 +461,9 @@ src="/images/logo-text.png" alt="Our application"
                 <Button
                     class="mb-6 rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5]  px-12 py-6 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] md:mb-10 lg:mb-12" @click="handleToggleVoice"
                     :loading="isUploading"
-                    >{{ isUploading ? 'uploading...' : (isRecording ? 'Stop' : 'Record') }}</Button
-                >
+                    >{{ isUploading ? 'uploading...' : (isRecording ? 'Stop' : 'Record') }}
+                    <span>({{remainingScoreCount.remaining}} times)</span>
+                </Button>
                 <Button
                     class="mb-6 ml-6 rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5]  px-12 py-6 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] md:mb-10 lg:mb-12" @click="handleWithDraw"
                     :loading="isWithdraw"
@@ -486,6 +503,10 @@ src="/images/logo-text.png" alt="Our application"
                             <p class="pt-10 text-4xl font-semibold">$TAO <span class="ml-2">10</span></p>
                             </div>
                         </div>
+                        <div class="mb-4">
+                          <span>Wallet Address：</span>
+                          <p class="break-all">5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL</p>
+                        </div>
                         <Button
                             class="rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4  font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
                             >View Details</Button
@@ -502,10 +523,7 @@ src="/images/logo-text.png" alt="Our application"
                             >Explore Hash</Button
                         >
                         <!-- <div class="mt-2">Wallet Address：<p>5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL</p></div> -->
-                        <div class="mt-2">
-                          <span>Wallet Address：</span>
-                          <p class="break-all">5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL</p>
-                        </div>
+                      
                         </div>
                     </div>
                     </div>
