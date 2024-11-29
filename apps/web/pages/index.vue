@@ -157,17 +157,14 @@ const handleWithDraw = async () => {
     })
 }
 
-const handleAudioResult = async (audioRes: string) => {
-    // console.log('voice result ===', audioRes)
+const handleAudioResult = async (audioRes: Blob) => {
+    console.log('voice result ===', audioRes)
     try {
         isUploading.value = true
         isRecording.value = false
 
-        const blobResponse = await fetch(audioRes);
-        const audioBlob = await blobResponse.blob();
-
         const formData = new FormData();
-        formData.append('file', audioBlob, 'voice.wav');
+        formData.append('file', audioRes, 'voice.wav');
 
         const response = await fetch("/api/ai/score", {
             method: "POST",

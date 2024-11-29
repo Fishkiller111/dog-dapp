@@ -24,7 +24,7 @@
 
 
     type AudioEmits = {
-        audioResult: string;
+        audioResult: Blob;
     }
 
     const emits = defineEmits<AudioEmits>();
@@ -91,7 +91,7 @@
                 clearVoiceTimer()
                 alert(`Record at least 3 seconds${minSecond}`)
             } else {
-                emits('audioResult', state.value.audioUrl)
+                emits('audioResult', audioBlob)
             }
           }
 
@@ -103,11 +103,11 @@
 
       // 绘制波形
       const drawWaveform = (): void => {
-        if (!visualizer.value || !state.value.analyser || !state.value.dataArray) 
+        if (!visualizer.value || !state.value.analyser || !state.value.dataArray)
 return
 
         const canvasCtx = visualizer.value.getContext('2d')
-        if (!canvasCtx) 
+        if (!canvasCtx)
 return
 
         const width = visualizer.value.width
@@ -213,7 +213,7 @@ return
 
       // 播放音频
       const playAudio = (): void => {
-        if (!audioPlayer.value) 
+        if (!audioPlayer.value)
 return
 
         if (audioPlayer.value.paused) {
