@@ -93,23 +93,38 @@ export const generateProductNames = protectedProcedure
       const formData = new FormData();
 
       // 创建 Blob 并添加到 FormData
-      const blob = new Blob([fileBuffer], { type: "audio/wav" }); // 根据实际音频类型调整
-      formData.append("file", blob, path.basename(filePath));
+      // const blob = new Blob([fileBuffer], { type: "audio/wav" }); // 根据实际音频类型调整
+      // formData.append("file", blob, path.basename(filePath));
+      formData.append("file", new Blob([fileBuffer]), "filename.wav");
 
       // 发送请求到 Python FastAPI 服务器
       // process.env.AI_API_URL
       const apiUrl = process.env.AI_API_URL || "http://localhost:8000";
+
       const response = await fetch(`${apiUrl}/predict`, {
         method: "POST",
         body: formData as any,
+      }).catch((error) => {
+        console.log(error);
       });
+      if (!response) {
+        throw new Error("No response from AI server");
+      }
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();
-      db.score
+      // 特殊处理，针对子网未上线做处理
+      // const data = await response.json();
+      const tempData = await response.json();
+      const data = {
+        result: tempData.result,
+        // 是狗叫就随机给1～5分，非狗叫就给0分
+        score:
+          tempData.result === "非狗叫" ? 0 : Math.floor(Math.random() * 5) + 1,
+      };
+      const res = await db.score
         .create({
           data: {
             userId: user.id,
@@ -121,7 +136,7 @@ export const generateProductNames = protectedProcedure
         });
 
       return {
-        result: data.result,
+        result: tempData.result === "非狗叫",
         score: data.score,
       };
     } catch (error) {
@@ -132,13 +147,13 @@ export const generateProductNames = protectedProcedure
       });
     } finally {
       // 在finally块中删除文件，确保无论成功还是失败都会执行
-      // try {
-      //   if (fs.existsSync(filePath)) {
-      //     fs.unlinkSync(filePath);
-      //   }
-      // } catch (deleteError) {
-      //   console.error("Error deleting temporary file:", deleteError);
-      //   // 不抛出删除文件的错误，因为主要操作已经完成
-      // }
+      try {
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      } catch (deleteError) {
+        console.error("Error deleting temporary file:", deleteError);
+        // 不抛出删除文件的错误，因为主要操作已经完成
+      }
     }
   });
