@@ -7,53 +7,73 @@ import { db } from "database";
 export const submitTasks = protectedProcedure
   .input(
     z.object({
-      taskType: z.nativeEnum(TaskType), // 使用传入的任务类型
+      taskType: z.nativeEnum(TaskType),
     }),
   )
   .mutation(async ({ input: { taskType }, ctx: { user } }) => {
     const userId = user.id;
 
-    // 定义永久任务类型数组
-    const permanentTasks = [
+    // 定义任务类型分组
+    const PERMANENT_TASKS = [
       TaskType.JOIN_DISCORD,
       TaskType.JOIN_TELEGRAM,
     ] as const;
 
-    // 使用类型谓词函数来检查是否为永久任务
-    const isPermanentTask = (type: TaskType): boolean => {
-      return permanentTasks.includes(type as (typeof permanentTasks)[number]);
+    // 获取美国东部时间的今天的开始和结束时间
+    const getUSDayRange = () => {
+      const now = new Date();
+      // 将当前时间转换为美国东部时间
+      const usDate = new Date(
+        now.toLocaleString("en-US", { timeZone: "America/New_York" }),
+      );
+
+      const startOfDay = new Date(usDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(usDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // 转换回 UTC 时间进行数据库查询
+      return {
+        start: new Date(startOfDay),
+        end: new Date(endOfDay),
+      };
     };
-    // 如果是永久性任务，检查是否已经完成过
+
+    const isPermanentTask = PERMANENT_TASKS.includes(
+      taskType as (typeof PERMANENT_TASKS)[number],
+    );
+
     if (isPermanentTask) {
-      const existingTask = await db.task.findUnique({
+      // 检查永久任务是否已完成
+      const existingTask = await db.task.findFirst({
         where: {
-          userId_type: {
-            userId,
-            type: taskType,
-          },
+          userId,
+          type: taskType,
+          status: TaskStatus.DONE,
         },
       });
 
       if (existingTask) {
-        throw new Error("Task already completed");
+        throw new Error("This permanent task has already been completed");
       }
-    }
-
-    // 如果是每日任务，检查今天是否已经完成
-    if (!isPermanentTask) {
+    } else {
+      // 检查每日任务在今天是否已完成
+      const { start: dayStart, end: dayEnd } = getUSDayRange();
       const todayTask = await db.task.findFirst({
         where: {
           userId,
           type: taskType,
+          status: TaskStatus.DONE,
           createdAt: {
-            gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
-            lt: new Date(new Date().setUTCHours(24, 0, 0, 0)),
+            gte: dayStart,
+            lte: dayEnd,
           },
         },
       });
 
       if (todayTask) {
-        throw new Error("Task already completed");
+        throw new Error("This daily task has already been completed today");
       }
     }
 
@@ -62,80 +82,112 @@ export const submitTasks = protectedProcedure
       data: {
         userId,
         type: taskType,
-        status: TaskStatus.DOEN,
+        status: TaskStatus.DONE, // 修正拼写错误：DONE -> DONE
       },
     });
-    if (!task) {
-      throw new Error("Failed to create task");
-    }
 
-    return task;
+    return {
+      success: true,
+      task,
+    };
   });
 
 export const getTaskStatusList = protectedProcedure.query(
   async ({ ctx: { user } }) => {
     const userId = user.id;
-    try {
-      // 定义任务类型组
-      const permanentTaskTypes = [
-        TaskType.JOIN_DISCORD,
-        TaskType.JOIN_TELEGRAM,
-      ] as const;
-      type PermanentTaskType = (typeof permanentTaskTypes)[number];
 
-      const isPermanentTask = (type: TaskType): type is PermanentTaskType => {
-        return permanentTaskTypes.includes(type as PermanentTaskType);
+    // 定义任务类型分组
+    const PERMANENT_TASKS = [
+      TaskType.JOIN_DISCORD,
+      TaskType.JOIN_TELEGRAM,
+    ] as const;
+    const DAILY_TASKS = [
+      TaskType.DAILY_CHECKIN,
+      TaskType.SHARE_DISCORD,
+      TaskType.SHARE_TELEGRAM,
+    ] as const;
+
+    // 获取美国东部时间的今天的开始和结束时间
+    const getUSDayRange = () => {
+      const now = new Date();
+      // 将当前时间转换为美国东部时间
+      const usDate = new Date(
+        now.toLocaleString("en-US", { timeZone: "America/New_York" }),
+      );
+
+      const startOfDay = new Date(usDate);
+      startOfDay.setHours(0, 0, 0, 0);
+
+      const endOfDay = new Date(usDate);
+      endOfDay.setHours(23, 59, 59, 999);
+
+      // 转换回 UTC 时间进行数据库查询
+      return {
+        start: new Date(startOfDay),
+        end: new Date(endOfDay),
       };
+    };
 
+    try {
       // 获取永久任务状态
       const permanentTasksStatus = await db.task.findMany({
         where: {
           userId,
           type: {
-            in: Array.from(permanentTaskTypes),
+            in: PERMANENT_TASKS as any,
           },
-          status: TaskStatus.DOEN,
+          status: TaskStatus.DONE,
+        },
+        select: {
+          type: true,
         },
       });
 
       // 获取每日任务状态
+      const { start: dayStart, end: dayEnd } = getUSDayRange();
       const dailyTasksStatus = await db.task.findMany({
         where: {
           userId,
           type: {
-            in: [
-              TaskType.DAILY_CHECKIN,
-              TaskType.SHARE_DISCORD,
-              TaskType.SHARE_TELEGRAM,
-            ],
+            in: DAILY_TASKS as any,
           },
-          status: TaskStatus.DOEN,
+          status: TaskStatus.DONE,
           createdAt: {
-            gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
-            lt: new Date(new Date().setUTCHours(24, 0, 0, 0)),
+            gte: dayStart,
+            lte: dayEnd,
           },
+        },
+        select: {
+          type: true,
         },
       });
 
+      // 创建已完成任务的集合，用于快速查找
+      const completedPermanentTasks = new Set(
+        permanentTasksStatus.map((task) => task.type),
+      );
+      const completedDailyTasks = new Set(
+        dailyTasksStatus.map((task) => task.type),
+      );
+
       // 生成状态列表
-      const allTaskStatus = Object.values(TaskType).map((taskType) => ({
+      const taskStatusList = Object.values(TaskType).map((taskType) => ({
         type: taskType,
-        status: isPermanentTask(taskType)
-          ? permanentTasksStatus.some((task) => task.type === taskType)
-            ? TaskStatus.DOEN
+        status: PERMANENT_TASKS.includes(
+          taskType as (typeof PERMANENT_TASKS)[number],
+        )
+          ? completedPermanentTasks.has(taskType)
+            ? TaskStatus.DONE
             : TaskStatus.PENDING
-          : dailyTasksStatus.some((task) => task.type === taskType)
-          ? TaskStatus.DOEN
+          : completedDailyTasks.has(taskType)
+          ? TaskStatus.DONE
           : TaskStatus.PENDING,
       }));
 
-      return allTaskStatus;
+      return taskStatusList;
     } catch (error) {
       console.error("Error getting task status list:", error);
-      return Object.values(TaskType).map((type) => ({
-        type,
-        status: TaskStatus.PENDING,
-      }));
+      throw new Error("Failed to get task status list");
     }
   },
 );

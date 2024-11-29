@@ -163,7 +163,7 @@ model Score {
 
 // 任务
 enum TaskStatus {
-  DOEN
+  DONE
   FAILED
   PENDING
 }

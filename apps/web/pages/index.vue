@@ -36,7 +36,7 @@ const navList = [{
     route: '#'
 },{
     name: 'Docs',
-    route: '#'
+    route: 'https://docs.woofai.io'
 }]
 
 const statusMap = ref({
@@ -80,6 +80,8 @@ const handleLogin = () => {
 }
 const selectNavItem = (index: number) => {
       selectedIndex.value = index
+      // navigateTo新窗口打开
+      window.open(navList[index].route)
 }
 const handleSessionCb = (cb?:Function) => {
     if (!isLogin.value) {
@@ -91,17 +93,35 @@ const handleSessionCb = (cb?:Function) => {
 
 
 const fetchTaskStatus = async () => {
-    const taskStatusList = await apiCaller.task.getTaskStatusList.useQuery()
-    const list = taskStatusList?.data?.value || []
-    for (const item of list) {
-        statusMap.value[item.type] = item.status === "DOEN" ? 1 : 0
+    const taskStatusList = await apiCaller.task.getTaskStatusList.query().catch((error) => {
+        toast({
+            variant: "error",
+            title: `${(error as Error).message}`,
+        });
+        return []
+    });
+    if (!taskStatusList || taskStatusList.length <= 0) {
+        return;
+    }
+    for (const item of taskStatusList) {
+        statusMap.value[item.type] = item.status === "DONE" ? 1 : 0
     }
 }
 
 const fetchBalance = async () => {
-    const { data } = await apiCaller.billing.balanceInquiry.useQuery();
-    balanceInquiry.value = data.value as unknown as balanceInquiryType;
-    console.log('balanceInquiry.value===', balanceInquiry.value)
+    const res = await apiCaller.billing.balanceInquiry.query().catch((error) => {
+        toast({
+            variant: "error",
+            title: `${(error as Error).message}`,
+        });
+    });
+    if (!res) {
+      console.log('fetchBalance error');
+      return;
+    }
+    
+    balanceInquiry.value = res as unknown as balanceInquiryType;
+    // console.log('balanceInquiry.value===', balanceInquiry.value)
 }
 
 const handleToggleVoice = (): void => {
@@ -117,15 +137,14 @@ const handleWithDraw = async () => {
 
             isWithdraw.value = true
             const res = await apiCaller.billing.withdrawBalance.mutate();
-            console.log(res);
-            const {data } = await apiCaller.billing.balanceInquiry.useQuery();
-            balanceInquiry.value = data as unknown as balanceInquiryType;
+            await fetchBalance()
             toast({
                 variant: "success",
                 title: `Success!`,
             });
+            isWithdraw.value = false
         } catch (error) {
-            console.log(error)
+            // console.log(error)
             toast({
                 variant: "error",
                 title: `${(error as Error).message}`,
@@ -137,10 +156,19 @@ const handleWithDraw = async () => {
 }
 
 const handleAudioResult = async (audioRes: Blob) => {
-    console.log('voice result ===', audioRes)
+    // console.log('voice result ===', audioRes)
     try {
         isUploading.value = true
-     const file = new File([audioRes], "voice.wav", { type: audioRes.type });
+    //  const file = new File([audioRes], "voice.wav", { type: audioRes.type });
+     const file = new File([audioRes], "voice.wav", { 
+          type: "audio/wav"  // 明确指定 MIME type
+      });
+
+
+      // 可选：添加日志来检查文件
+      console.log("File type:", file.type);
+      console.log("File size:", file.size);
+
       const formData = new FormData();
       formData.append("file", file);
       const response = await fetch("/api/ai/score", {
@@ -179,7 +207,7 @@ const handleAudioResult = async (audioRes: Blob) => {
 }
 
 
-const handleTab = async (type: string) => {
+const handleTab = async (type: string, url: string) => {
     const comeSoon = ['Trade', 'Stake']
     if (comeSoon.includes(type)) {
         toast({
@@ -188,7 +216,10 @@ const handleTab = async (type: string) => {
         });
         return
     }
-    if (type === 'Invitation') showConfirmation.value = true
+    if (type === 'Invitation') {
+      showConfirmation.value = true
+      return
+    }
 
     if (type === 'Daily') {
         fetchScore('DAILY_CHECKIN')
@@ -210,7 +241,32 @@ const TASK_TYPES = [
   ] as const;
   type TaskType = (typeof TASK_TYPES)[number];
 
-const fetchScore = (type: TaskType, cb?: Function) => {
+const TASK_TYPES_MAP = {
+    DAILY_CHECKIN: "Daily Check-In",
+    JOIN_DISCORD: "https://discord.com/invite/mcVsS8nf",
+    JOIN_TELEGRAM: "Join Telegram",
+    SHARE_DISCORD: "https://discord.com/invite/mcVsS8nf",
+    SHARE_TELEGRAM: "https://discord.com/invite/mcVsS8nf",
+  } as const;
+
+const copyText = async (textToCopy: string) => {
+  try {
+    await navigator.clipboard.writeText(textToCopy)
+    toast({
+        variant: "success",
+        title: `Copy: ${textToCopy} !`,
+    });
+  } catch (err) {
+    console.error('复制失败:', err)
+  }
+}
+const fetchScore = (type: TaskType, cb?: any) => {
+    if (type.includes('SHARE')) {
+        copyText(TASK_TYPES_MAP[type])
+    } else {
+      window.open(TASK_TYPES_MAP[type])
+    }
+
     handleSessionCb(async () => {
         try {
             await apiCaller.task.submitTasks.mutate({
@@ -233,7 +289,7 @@ const fetchScore = (type: TaskType, cb?: Function) => {
 }
 
 const handleShare = (type: TaskType): void => {
-    console.log('handleShare', type)
+    // console.log('handleShare', type)
     fetchScore(type)
 }
 
@@ -260,27 +316,27 @@ const handleShare = (type: TaskType): void => {
                 alt="Our application"
                 class="block size-16 rounded-xl object-cover"
             />
-            <NuxtImg src="/images/logo-text.png" alt="Our application"
-            class="block w-28 rounded-xl object-cover ml-2" />
+            <NuxtImg
+src="/images/logo-text.png" alt="Our application"
+            class="ml-2 block w-28 rounded-xl object-cover" />
           </a>
           <!-- MENU CONTENT 1 -->
           <div
             class="mt-14 flex flex-col space-y-8 lg:mt-0 lg:flex lg:flex-row lg:space-x-1 lg:space-y-0"
             x-bind:class="isOpen ? 'show' : 'hidden'"
           >
-          <div class="flex items-center border border-[#0C0E0C] rounded-full">
+          <div class="flex items-center rounded-full border border-[#0C0E0C]">
                 <div
-                v-for="(item, index) in navList"
-                :key="item.name"
-                :class="[
-                    'w-40 text-center py-3 font-medium text-2xl cursor-pointer transition-all duration-300',
-                    selectedIndex === index
-                    ? 'bg-[#CABDB0] rounded-full [box-shadow:rgb(0,0,0)_0px_2px]'
-                    : 'hover:bg-[rgba(202, 189, 176, 0.5)] text-gray-700 hover:rounded-full'
-                ]"
-                @click="selectNavItem(index)"
-                >
-                {{item.name}}
+                  v-for="(item, index) in navList"
+                  :key="item.name"
+                  class="w-40 cursor-pointer py-3 text-center text-2xl font-medium transition-all duration-300" :class="[
+                      selectedIndex === index
+                      ? 'rounded-full bg-[#CABDB0] [box-shadow:rgb(0,0,0)_0px_2px]'
+                      : 'hover:bg-[rgba(202, 189, 176, 0.5)] text-gray-700 hover:rounded-full'
+                  ]"
+                  @click="selectNavItem(index)"
+                  >
+                  {{item.name}}
                 </div>
             </div>
 
@@ -320,7 +376,7 @@ const handleShare = (type: TaskType): void => {
               >Sign Up</a
             > -->
             <Button
-            class="relative mr-5 inline-block bg-[#fbf8f5] rounded-3xl px-8 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] hover:border-[#0C0E0C] md:mr-6 border border-[#0C0E0C] w-fit"
+            class="relative mr-5 inline-block w-fit rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-8 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] hover:border-[#0C0E0C] md:mr-6"
             @click="handleLogin"
             >{{isLogin ? 'Disconnect' : 'Wallet'}}</Button
             >
@@ -381,23 +437,30 @@ const handleShare = (type: TaskType): void => {
                 <NuxtImg
                     src="/images/home.gif"
                     alt="Our application"
-                    class="block w-64 rounded-xl mb-20 dark:hidden"
+                    class="mb-20 block w-64 rounded-xl dark:hidden"
                 />
 
                 <AudioRecorder ref="audioRecorder" @audioResult="handleAudioResult" />
 
-            <div class="flex items-center">
+              <div class="flex items-center">
                 <Button
-                    class="mb-6 rounded-3xl bg-[#fbf8f5] px-12 py-6  text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] md:mb-10 lg:mb-12 border border-[#0C0E0C]" @click="handleToggleVoice"
+                    class="mb-6 rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5]  px-12 py-6 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] md:mb-10 lg:mb-12" @click="handleToggleVoice"
                     :loading="isUploading"
                     >{{ isUploading ? 'uploading...' : (isRecording ? 'Stop' : 'Record') }}</Button
                 >
                 <Button
-                    class="ml-6 mb-6 rounded-3xl bg-[#fbf8f5] px-12 py-6  text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] md:mb-10 lg:mb-12 border border-[#0C0E0C]" @click="handleWithDraw"
+                    class="mb-6 ml-6 rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5]  px-12 py-6 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] md:mb-10 lg:mb-12" @click="handleWithDraw"
                     :loading="isWithdraw"
-                    >Withdraw<span v-if="isLogin">({{balanceInquiry.withdrawable}})</span></Button
+                    >Withdraw</Button
                 >
-                </div>
+              </div>
+              <div  v-if="isLogin">
+                <!-- <p class="mt-2" v-if="walletAddress">Wallet Address：{{walletAddress}}</p> -->
+                <p class="mt-2">balanceInquiry：{{balanceInquiry.withdrawable}}</p>
+                <p class="mt-2">pending：{{balanceInquiry.pending}}</p>
+                <p class="mt-2">completed：{{balanceInquiry.completed}}</p>
+
+              </div>
             </div>
             <!-- Image Div -->
             <div
@@ -409,36 +472,35 @@ const handleShare = (type: TaskType): void => {
                     data-aos-duration="900"
                     >
                     <div
-                        class="relative w-full mx-auto max-w-7xl   bg-cover bg-center bg-no-repeat py-10 px-5 text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] rounded-[48px] border border-[#0C0E0C]"
+                        class="relative mx-auto w-full max-w-7xl   rounded-[48px] border border-[#0C0E0C] bg-cover bg-center bg-no-repeat px-5 py-10 text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
                     >
-                        <img src="/images/trade-bg.png" class="absolute left-0 top-0 size-full rounded-[48px] opacity-60 object-cover" />
+                        <img src="/images/trade-bg.png" class="absolute left-0 top-0 size-full rounded-[48px] object-cover opacity-60" />
                         <div class="relative mx-auto flex max-w-3xl flex-col items-center justify-center text-center">
                         <div class="mb-5  max-w-[720px] lg:mb-10">
                             <h2 class="mb-2 text-2xl font-semibold md:text-2xl">
                                 IDO ANNOUNCEMENT
                             </h2>
-                            <div class="mx-auto max-w-[630px] flex flex-col justify-center items-center">
-                            <p class="text-[#0C0E0C] mb-2 bg-[#fbf8f5] px-4 py-2 rounded-lg [box-shadow:#B8B6B5_0px_4px] border-2 border-[#0C0E0C] text-lg">
-                                Powering the Next-Gen Subnet on Bittensor
+                            <div class="mx-auto flex max-w-[630px] flex-col items-center justify-center">
+                            <p class="mb-2 rounded-lg border-2 border-[#0C0E0C] bg-[#fbf8f5] px-4 py-2 text-lg text-[#0C0E0C] [box-shadow:#B8B6B5_0px_4px]">
+                              border2+drop shadow coming soon
                             </p>
-                            <h3 class="font-semibold mt-4 text-xl">Fundraising Goal</h3>
-                            <p class="text-4xl font-semibold pt-10">$TAO <span class="ml-2">10</span></p>
-                            <p class="mt-2" v-if="walletAddress">Wallet Address：{{walletAddress}}</p>
+                            <h3 class="mt-4 text-xl font-semibold">Raised</h3>
+                            <p class="pt-10 text-4xl font-semibold">$TAO <span class="ml-2">10</span></p>
                             </div>
                         </div>
                         <Button
-                            class="rounded-3xl bg-[#fbf8f5] text-[#0C0E0C] px-6 py-4 font-semibold  [box-shadow:rgb(0,0,0)_0px_4px] border border-[#0C0E0C]"
+                            class="rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4  font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
                             >View Details</Button
                         >
-                        <div class="flex items-center text-2xl py-6 lg:mb-10">
-                            <Divide class="bg-white border-2 border-[#0C0E0C] rounded-2xl w-20 py-10 [box-shadow:rgb(0,0,0)_0px_4px] text-xl font-bold">TAO</Divide>
+                        <div class="flex items-center py-6 text-2xl lg:mb-10">
+                            <Divide class="w-20 rounded-2xl border-2 border-[#0C0E0C] bg-white py-10 text-xl font-bold [box-shadow:rgb(0,0,0)_0px_4px]">TAO</Divide>
                             <!-- <span class="mx-2 font-normal text-xl">Coming Soon</span>  -->
-                            <NuxtImg src="/images/coming-soon.png" class="w-32 mx-2 " />
+                            <NuxtImg src="/images/coming-soon.png" class="mx-2 w-32 " />
 
-                            <div class="bg-white border-2 border-[#0C0E0C] rounded-2xl w-20 py-10 [box-shadow:rgb(0,0,0)_0px_4px] text-xl font-bold">WTAO</div>
+                            <div class="w-20 rounded-2xl border-2 border-[#0C0E0C] bg-white py-10 text-xl font-bold [box-shadow:rgb(0,0,0)_0px_4px]">WTAO</div>
                         </div>
                         <Button
-                            class="rounded-3xl bg-[#fbf8f5]  px-6 mb-4 py-4 font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] border border-[#0C0E0C]"
+                            class="mb-4 rounded-3xl  border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4 font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
                             >Explore Hash</Button
                         >
                         </div>
@@ -462,11 +524,11 @@ const handleShare = (type: TaskType): void => {
           <div class="mx-auto w-full max-w-3xl">
             <!-- Component -->
             <div class="text-center">
-              <p class="uppercase text-[#000] pb-2">3 easy steps</p>
+              <p class="pb-2 uppercase text-black">3 easy steps</p>
               <h2 class="text-3xl font-semibold md:text-3xl ">
                 How it mine
                 <span
-                  class="bg-cover bg-center bg-no-repeat px-4 text-white bg-[#cabdb0]"
+                  class="bg-[#cabdb0] bg-cover bg-center bg-no-repeat px-4 text-white"
                   >$WOOF</span
                 >
               </h2>
@@ -569,7 +631,7 @@ const handleShare = (type: TaskType): void => {
           >
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex cursor-pointer flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4"
               @click="handleTab('Daily')"
             >
               <div
@@ -585,12 +647,12 @@ const handleShare = (type: TaskType): void => {
                 <p>Upload Data Now!</p>
             </div>
 
-              <div class="absolute right-9 bottom-5 px-3 py-2 font-semibold border-2 border-solid border-[#0C0E0C] [box-shadow:rgb(0,_0,_0)_0px_4px] rounded-xl text-xl">{{statusMap.DAILY_CHECKIN}}/1</div>
+              <div class="absolute bottom-5 right-9 rounded-xl border-2 border-solid border-[#0C0E0C] px-3 py-2 text-xl font-semibold [box-shadow:rgb(0,_0,_0)_0px_4px]">{{statusMap.DAILY_CHECKIN}}/1</div>
 
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex cursor-pointer flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4"
               @click="handleTab('Discord')"
             >
               <div
@@ -599,18 +661,18 @@ const handleShare = (type: TaskType): void => {
                 <svg t="1732542917197" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4283" width="32" height="32"><path d="M404.992 156.992L380 160s-112.128 12.256-194.016 78.016h-0.96l-1.024 0.96c-18.368 16.896-26.368 37.664-39.008 68.032a982.08 982.08 0 0 0-37.984 112C83.264 504.864 64 608.864 64 704v8l4 8c29.632 52 82.24 85.12 131.008 108 48.736 22.88 90.88 35.008 120 36l19.008 0.992 9.984-16.992 35.008-62.016c37.12 8.384 79.872 14.016 128.992 14.016 49.12 0 91.872-5.632 128.992-14.016l35.008 62.016 10.016 16.992 18.976-0.992c29.12-0.992 71.264-13.12 120-36 48.768-22.88 101.376-56 131.008-108l4-8V704c0-95.136-19.264-199.136-43.008-284.992a982.08 982.08 0 0 0-37.984-112c-12.64-30.4-20.64-51.136-39.008-68l-0.992-1.024h-1.024C756.16 172.256 644 160 644 160l-24.992-3.008-9.024 23.008s-9.248 23.36-14.976 50.016A643.04 643.04 0 0 0 512 224c-17.12 0-46.72 1.12-83.008 6.016-5.76-26.656-15.008-50.016-15.008-50.016z m-44 73.024c1.376 4.48 2.752 8.352 4 12-41.376 10.24-85.504 25.856-125.984 50.976l33.984 54.016C356 295.488 475.232 288 512 288c36.736 0 156 7.488 239.008 59.008l33.984-54.016c-40.48-25.12-84.608-40.736-125.984-51.008 1.248-3.616 2.624-7.488 4-12 29.856 6.016 86.88 19.776 133.984 57.024-0.256 0.128 12 18.624 23.008 44.992 11.264 27.136 23.744 63.264 35.008 104 21.632 78.112 38.624 173.248 40 256.992-20.16 30.752-57.504 58.496-97.024 77.024a311.808 311.808 0 0 1-77.984 24.96L704 768c9.504-3.52 18.88-7.36 27.008-11.008 49.248-21.632 76-44.992 76-44.992l-42.016-48s-17.984 16.512-60 35.008C663.04 717.504 598.88 736 512 736s-151.008-18.496-192.992-36.992c-42.016-18.496-60-35.008-60-35.008l-42.016 48s26.752 23.36 76 44.992c8.128 3.648 17.504 7.52 27.008 11.008l-16 27.008a311.808 311.808 0 0 1-78.016-25.024c-39.488-18.496-76.864-46.24-96.96-76.992 1.344-83.744 18.336-178.88 40-256.992a917.216 917.216 0 0 1 34.976-104c11.008-26.368 23.264-44.864 23.008-44.992 47.104-37.248 104.128-51.008 133.984-56.992zM400 448c-24.736 0-46.624 14.112-60 32-13.376 17.888-20 39.872-20 64s6.624 46.112 20 64c13.376 17.888 35.264 32 60 32 24.736 0 46.624-14.112 60-32 13.376-17.888 20-39.872 20-64s-6.624-46.112-20-64c-13.376-17.888-35.264-32-60-32z m224 0c-24.736 0-46.624 14.112-60 32-13.376 17.888-20 39.872-20 64s6.624 46.112 20 64c13.376 17.888 35.264 32 60 32 24.736 0 46.624-14.112 60-32 13.376-17.888 20-39.872 20-64s-6.624-46.112-20-64c-13.376-17.888-35.264-32-60-32z m-224 64c1.76 0 4 0.64 8 6.016 4 5.344 8 14.72 8 25.984 0 11.264-4 20.64-8 26.016-4 5.344-6.24 5.984-8 5.984-1.76 0-4-0.64-8-6.016A44.832 44.832 0 0 1 384 544c0-11.264 4-20.64 8-26.016 4-5.344 6.24-5.984 8-5.984z m224 0c1.76 0 4 0.64 8 6.016 4 5.344 8 14.72 8 25.984 0 11.264-4 20.64-8 26.016-4 5.344-6.24 5.984-8 5.984-1.76 0-4-0.64-8-6.016A44.832 44.832 0 0 1 608 544c0-11.264 4-20.64 8-26.016 4-5.344 6.24-5.984 8-5.984z" p-id="4284"></path></svg>
               </div>
               <p class="mb-4 text-xl font-semibold">Join Discord </p>
-              <p class="text-sm max-w-56">
+              <p class="max-w-56 text-sm">
                 Join The Official Discord Channel To Stay Updated With The Latest News.
                 Stay With Us!
 
               </p>
 
-              <div class="absolute right-9 bottom-5 px-3 py-2 font-semibold border-2 border-solid border-[#0C0E0C] [box-shadow:rgb(0,_0,_0)_0px_4px] rounded-xl text-xl">{{statusMap.JOIN_DISCORD}}/1</div>
+              <div class="absolute bottom-5 right-9 rounded-xl border-2 border-solid border-[#0C0E0C] px-3 py-2 text-xl font-semibold [box-shadow:rgb(0,_0,_0)_0px_4px]">{{statusMap.JOIN_DISCORD}}/1</div>
 
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex cursor-pointer flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4"
               @click="handleTab('Trade')"
             >
               <div
@@ -625,7 +687,7 @@ const handleShare = (type: TaskType): void => {
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex cursor-pointer flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4"
               @click="handleTab('Invitation')"
             >
               <div
@@ -641,13 +703,13 @@ const handleShare = (type: TaskType): void => {
                 <p>Discord Invitation</p>
                 </div>
 
-              <div class="absolute right-9 bottom-5 px-3 py-2 font-semibold border-2 border-solid border-[#0C0E0C] [box-shadow:rgb(0,_0,_0)_0px_4px] rounded-xl text-xl">{{statusMap.SHARE_DISCORD + statusMap.SHARE_TELEGRAM}}/2</div>
+              <div class="absolute bottom-5 right-9 rounded-xl border-2 border-solid border-[#0C0E0C] px-3 py-2 text-xl font-semibold [box-shadow:rgb(0,_0,_0)_0px_4px]">{{statusMap.SHARE_DISCORD + statusMap.SHARE_TELEGRAM}}/2</div>
 
 
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex cursor-pointer flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4"
               @click="handleTab('Telegram')"
             >
               <div
@@ -656,17 +718,17 @@ const handleShare = (type: TaskType): void => {
                 <svg t="1732543001265" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5324" width="32" height="32"><path d="M834.24 127.872a95.168 95.168 0 0 0-29.856 7.136h-0.128c-9.12 3.616-52.48 21.856-118.4 49.504l-236.224 99.488c-169.504 71.36-336.128 141.632-336.128 141.632l1.984-0.768s-11.488 3.776-23.488 12a64.96 64.96 0 0 0-18.752 18.144c-5.888 8.64-10.624 21.856-8.864 35.52 2.88 23.104 17.856 36.96 28.608 44.608 10.88 7.744 21.248 11.36 21.248 11.36h0.256l156.256 52.64c7.008 22.496 47.616 156 57.376 186.752 5.76 18.368 11.36 29.856 18.368 38.624 3.392 4.48 7.36 8.224 12.128 11.232a35.808 35.808 0 0 0 7.872 3.392l-1.6-0.384c0.48 0.128 0.864 0.512 1.216 0.64 1.28 0.352 2.144 0.48 3.776 0.736 24.736 7.488 44.608-7.872 44.608-7.872l1.12-0.896 92.256-84 154.624 118.624 3.52 1.504c32.224 14.144 64.864 6.272 82.112-7.616 17.376-13.984 24.128-31.872 24.128-31.872l1.12-2.88 119.488-612.128c3.392-15.104 4.256-29.248 0.512-42.976a57.824 57.824 0 0 0-24.992-33.504 59.904 59.904 0 0 0-34.144-8.64z m-3.232 65.6c-0.128 2.016 0.256 1.792-0.64 5.664v0.352l-118.368 605.76c-0.512 0.864-1.376 2.752-3.744 4.64-2.496 1.984-4.48 3.232-14.88-0.896l-189.12-144.992-114.24 104.128 24-153.28 308.992-288c12.736-11.84 8.48-14.336 8.48-14.336 0.896-14.528-19.232-4.256-19.232-4.256l-389.632 241.376-0.128-0.64-186.752-62.88v-0.128l-0.48-0.096a8.64 8.64 0 0 0 0.96-0.384l1.024-0.512 0.992-0.352s166.752-70.272 336.256-141.632c84.864-35.744 170.368-71.744 236.128-99.52 65.76-27.616 114.368-47.872 117.12-48.96 2.624-1.024 1.376-1.024 3.264-1.024z" p-id="5325"></path></svg>
               </div>
               <p class="mb-4 text-xl font-semibold">Join Telegram</p>
-              <p class="text-sm max-w-56">
+              <p class="max-w-56 text-sm">
                 Join The Official Telegram Channel For The Latest Updates And $WOOF Price Information.
               </p>
 
-              <div class="absolute right-9 bottom-5 px-3 py-2 font-semibold border-2 border-solid border-[#0C0E0C] [box-shadow:rgb(0,_0,_0)_0px_4px] rounded-xl text-xl">{{statusMap.JOIN_TELEGRAM}}/1</div>
+              <div class="absolute bottom-5 right-9 rounded-xl border-2 border-solid border-[#0C0E0C] px-3 py-2 text-xl font-semibold [box-shadow:rgb(0,_0,_0)_0px_4px]">{{statusMap.JOIN_TELEGRAM}}/1</div>
 
 
             </div>
             <!-- Feature Item -->
             <div
-              class="relative mb-8 flex flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4 cursor-pointer"
+              class="relative mb-8 flex cursor-pointer flex-col rounded-2xl border border-solid border-[#0C0E0C] p-8 [box-shadow:rgb(0,_0,_0)_0px_4px] lg:mb-4"
               @click="handleTab('Stake')"
             >
               <div
@@ -693,24 +755,26 @@ const handleShare = (type: TaskType): void => {
               <!-- LOGO -->
               <a
                 href="#"
-                class="mb-12 flex items-center inline-block max-w-full font-bold text-[#0C0E0C]"
+                class="mb-12 inline-block flex max-w-full items-center font-bold text-[#0C0E0C]"
               >
               <NuxtImg
                     src="/images/logo.png"
                     alt="Our application"
                     class="block size-16 rounded-xl object-cover dark:hidden"
                 />
-                <NuxtImg src="/images/logo-text.png" alt="Our application"
-            class="block w-28 rounded-xl object-cover ml-2" />
+                <NuxtImg
+src="/images/logo-text.png" alt="Our application"
+            class="ml-2 block w-28 rounded-xl object-cover" />
               </a>
               <p class="font-inter my-4 max-w-[350px] text-base font-light">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit ut al
+                https://discord.com/invite/mcVsS8nf
               </p>
               <!-- NEWSLETTER & EMAIL -->
               <div class="flex flex-col">
                 <div>
                   <h3 for="email" class="font-inter mb-4 mt-8 font-medium">
-                    EMAIL US
+                    <!-- EMAIL US -->
+                    <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="5493" width="25" height="25"><path d="M513 583.8l448.5-448.5c-11.6-4.7-24.3-7.3-37.5-7.3H100c-12.7 0-24.9 2.4-36.1 6.7L513 583.8z" p-id="5494"></path><path d="M513 674.3L14.6 175.9C5.3 191.1 0 208.9 0 228v568c0 55.2 44.8 100 100 100h824c55.2 0 100-44.8 100-100V228c0-18.5-5.1-35.9-13.9-50.8L513 674.3z" p-id="5495"></path></svg>
                   </h3>
                   <p class="font-inter text-base">partnerships@woofai.io</p>
                 </div>
@@ -729,7 +793,7 @@ const handleShare = (type: TaskType): void => {
                   <h2 class="font-inter font-medium">IDO</h2>
                   <a href="" class="font-inter font-light text-gray-500">Trade</a>
                   <a href="" class="font-inter font-light text-gray-500">Stake</a>
-                  <a href="" class="font-inter font-light text-gray-500">Docs</a>
+                  <a href="https://docs.woofai.io"  target="_blank" class="font-inter font-light text-gray-500">Docs</a>
                 </div>
               </div>
             </div>
@@ -738,7 +802,7 @@ const handleShare = (type: TaskType): void => {
           <div class="mt-20 lg:flex lg:flex-row-reverse lg:justify-between">
             <!-- SOCIAL MEDIA ICONS -->
             <div class="mb-8 mt-6 flex flex-row lg:my-0">
-              <a href="" class="mr-4 transition hover:text-gray-400">
+              <!-- <a href="" target="_blank" class="mr-4 transition hover:text-gray-400">
                 <svg
                   class="fill-current"
                   width="24"
@@ -750,8 +814,8 @@ const handleShare = (type: TaskType): void => {
                     d="M12 2.25C9.4791 2.25005 7.05619 3.22647 5.23968 4.97439C3.42317 6.72231 2.35426 9.10586 2.25723 11.6249C2.1602 14.1439 3.0426 16.6026 4.71928 18.4851C6.39595 20.3676 8.73657 21.5275 11.25 21.7214V14.2501H9C8.80109 14.2501 8.61032 14.1711 8.46967 14.0304C8.32902 13.8898 8.25 13.699 8.25 13.5001C8.25 13.3012 8.32902 13.1104 8.46967 12.9698C8.61032 12.8291 8.80109 12.7501 9 12.7501H11.25V10.5001C11.2509 9.70472 11.5673 8.94218 12.1297 8.37977C12.6921 7.81736 13.4546 7.501 14.25 7.50009H15.75C15.9489 7.50009 16.1397 7.57911 16.2803 7.71976C16.421 7.86041 16.5 8.05118 16.5 8.25009C16.5 8.449 16.421 8.63977 16.2803 8.78042C16.1397 8.92107 15.9489 9.00009 15.75 9.00009H14.25C13.8523 9.00054 13.471 9.15872 13.1898 9.43993C12.9086 9.72114 12.7505 10.1024 12.75 10.5001V12.7501H15C15.1989 12.7501 15.3897 12.8291 15.5303 12.9698C15.671 13.1104 15.75 13.3012 15.75 13.5001C15.75 13.699 15.671 13.8898 15.5303 14.0304C15.3897 14.1711 15.1989 14.2501 15 14.2501H12.75V21.7214C15.2634 21.5275 17.604 20.3676 19.2807 18.4851C20.9574 16.6026 21.8398 14.1439 21.7427 11.6249C21.6457 9.10587 20.5768 6.72232 18.7603 4.9744C16.9438 3.22649 14.5209 2.25006 12 2.25Z"
                   />
                 </svg>
-              </a>
-              <a href="" class="mx-4 transition hover:text-gray-400">
+              </a> -->
+              <!-- <a href="" class="mx-4 transition hover:text-gray-400">
                 <svg
                   class="fill-current"
                   width="24"
@@ -766,8 +830,8 @@ const handleShare = (type: TaskType): void => {
                     d="M16.125 2.625H7.875C6.4831 2.62658 5.14865 3.18021 4.16443 4.16443C3.18021 5.14865 2.62658 6.4831 2.625 7.875V16.125C2.62658 17.5169 3.18021 18.8513 4.16443 19.8356C5.14865 20.8198 6.4831 21.3734 7.875 21.375H16.125C17.5169 21.3734 18.8513 20.8198 19.8356 19.8356C20.8198 18.8513 21.3734 17.5169 21.375 16.125V7.875C21.3734 6.4831 20.8198 5.14865 19.8356 4.16443C18.8513 3.18021 17.5169 2.62658 16.125 2.625ZM12 16.5C11.11 16.5 10.24 16.2361 9.49993 15.7416C8.75991 15.2471 8.18314 14.5443 7.84254 13.7221C7.50195 12.8998 7.41283 11.995 7.58647 11.1221C7.7601 10.2492 8.18868 9.44736 8.81802 8.81802C9.44736 8.18868 10.2492 7.7601 11.1221 7.58647C11.995 7.41283 12.8998 7.50195 13.7221 7.84254C14.5443 8.18314 15.2471 8.75991 15.7416 9.49993C16.2361 10.24 16.5 11.11 16.5 12C16.4987 13.1931 16.0241 14.3369 15.1805 15.1805C14.3369 16.0241 13.1931 16.4987 12 16.5ZM16.875 8.25C16.6525 8.25 16.435 8.18402 16.25 8.0604C16.065 7.93679 15.9208 7.76109 15.8356 7.55552C15.7505 7.34995 15.7282 7.12375 15.7716 6.90552C15.815 6.68729 15.9222 6.48684 16.0795 6.3295C16.2368 6.17217 16.4373 6.06502 16.6555 6.02162C16.8738 5.97821 17.1 6.00049 17.3055 6.08564C17.5111 6.17078 17.6868 6.31498 17.8104 6.49998C17.934 6.68499 18 6.9025 18 7.125C18 7.42337 17.8815 7.70952 17.6705 7.9205C17.4595 8.13147 17.1734 8.25 16.875 8.25Z"
                   />
                 </svg>
-              </a>
-              <a href="" class="mx-4 transition hover:text-gray-400">
+              </a> -->
+              <!-- <a href="" class="mx-4 transition hover:text-gray-400">
                 <svg
                   class="fill-current"
                   width="25"
@@ -779,8 +843,8 @@ const handleShare = (type: TaskType): void => {
                     d="M21.5952 12.4998C22.1776 11.988 22.5489 11.2779 22.6367 10.5076C22.7245 9.73723 22.5226 8.96177 22.0703 8.33205C21.618 7.70233 20.9476 7.2634 20.1895 7.10064C19.4315 6.93788 18.64 7.06293 17.969 7.45147V5.46854C17.9694 4.83357 17.7763 4.21356 17.4153 3.69117C17.0544 3.16878 16.5427 2.76884 15.9486 2.54466C15.3546 2.32048 14.7063 2.28271 14.0902 2.4364C13.4741 2.59009 12.9195 2.92793 12.5003 3.40487C11.9885 2.82243 11.2784 2.45118 10.5081 2.36336C9.73772 2.27555 8.96225 2.47744 8.33253 2.92976C7.70282 3.38208 7.26388 4.05249 7.10112 4.81054C6.93836 5.5686 7.06342 6.36009 7.45197 7.03104H5.46904C4.83406 7.03063 4.21405 7.22379 3.69166 7.58476C3.16927 7.94573 2.76933 8.45736 2.54515 9.05144C2.32097 9.64552 2.28321 10.2938 2.4369 10.9099C2.59059 11.526 2.92843 12.0806 3.40538 12.4998C2.82293 13.0115 2.45168 13.7217 2.36386 14.492C2.27603 15.2624 2.47792 16.0378 2.93024 16.6676C3.38257 17.2973 4.05297 17.7362 4.81103 17.899C5.56909 18.0617 6.36059 17.9367 7.03154 17.5481V19.531C7.03113 20.166 7.22428 20.786 7.58525 21.3084C7.94622 21.8308 8.45785 22.2307 9.05193 22.4549C9.64602 22.6791 10.2943 22.7169 10.9104 22.5632C11.5265 22.4095 12.0811 22.0717 12.5003 21.5947C13.012 22.1772 13.7222 22.5484 14.4925 22.6362C15.2629 22.724 16.0383 22.5221 16.668 22.0698C17.2978 21.6175 17.7367 20.9471 17.8995 20.189C18.0622 19.431 17.9372 18.6395 17.5486 17.9685H19.5315C20.1665 17.969 20.7865 17.7758 21.3089 17.4148C21.8313 17.0539 22.2312 16.5422 22.4554 15.9481C22.6796 15.3541 22.7174 14.7058 22.5637 14.0897C22.41 13.4736 22.0721 12.919 21.5952 12.4998ZM8.59404 5.46854C8.59404 5.05414 8.75866 4.65671 9.05168 4.36369C9.34471 4.07066 9.74214 3.90604 10.1565 3.90604C10.5709 3.90604 10.9684 4.07066 11.2614 4.36369C11.5544 4.65671 11.719 5.05414 11.719 5.46854V7.03104H10.1565C9.74228 7.03057 9.34513 6.8658 9.05221 6.57287C8.75928 6.27995 8.59451 5.8828 8.59404 5.46854ZM3.90654 10.156C3.90701 9.74179 4.07178 9.34463 4.36471 9.05171C4.65763 8.75879 5.05478 8.59402 5.46904 8.59354H10.1565C10.5708 8.59402 10.9679 8.75879 11.2609 9.05171C11.5538 9.34463 11.7186 9.74179 11.719 10.156V11.7185H5.46904C5.05478 11.7181 4.65763 11.5533 4.36471 11.2604C4.07178 10.9675 3.90701 10.5703 3.90654 10.156ZM16.4065 19.531C16.4065 19.9454 16.2419 20.3429 15.9489 20.6359C15.6559 20.9289 15.2584 21.0935 14.844 21.0935C14.4296 21.0935 14.0322 20.9289 13.7392 20.6359C13.4462 20.3429 13.2815 19.9454 13.2815 19.531V17.9685H14.844C15.2583 17.969 15.6554 18.1338 15.9484 18.4267C16.2413 18.7196 16.4061 19.1168 16.4065 19.531ZM19.5315 16.406H14.844C14.4298 16.4056 14.0326 16.2408 13.7397 15.9479C13.4468 15.655 13.282 15.2578 13.2815 14.8435V13.281H19.5315C19.9459 13.281 20.3434 13.4457 20.6364 13.7387C20.9294 14.0317 21.094 14.4291 21.094 14.8435C21.094 15.2579 20.9294 15.6554 20.6364 15.9484C20.3434 16.2414 19.9459 16.406 19.5315 16.406Z"
                   />
                 </svg>
-              </a>
-              <a href="" class="mx-4 transition hover:text-gray-400">
+              </a> -->
+              <a href="https://x.com/WoofAI_io" target="_blank" class="mx-4 transition hover:text-gray-400">
                 <svg
                   class="fill-current"
                   width="25"
@@ -793,9 +857,14 @@ const handleShare = (type: TaskType): void => {
                   />
                 </svg>
               </a>
+              <a
+                href="https://github.com/Woof-AI" target="_blank"
+                class="mx-4 transition hover:text-gray-400">
+                <svg class="fill-current" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4424" width="25" height="25"><path d="M511.968 73.152q119.424 0 220.288 58.848t159.712 159.712 58.848 220.288q0 143.424-83.712 258.016t-216.288 158.56q-15.424 2.848-22.848-4t-7.424-17.152q0-1.728 0.288-43.712t0.288-76.864q0-55.424-29.728-81.152 32.576-3.424 58.56-10.272t53.728-22.272 46.272-38.016 30.272-60 11.712-86.016q0-68-45.152-117.728 21.152-52-4.576-116.576-16-5.152-46.272 6.272t-52.576 25.152l-21.728 13.728q-53.152-14.848-109.728-14.848t-109.728 14.848q-9.152-6.272-24.288-15.424t-47.712-22.016-48.576-7.712q-25.728 64.576-4.576 116.576-45.152 49.728-45.152 117.728 0 48.576 11.712 85.728t30.016 60 46.016 38.272 53.728 22.272 58.56 10.272q-22.272 20.576-28 58.848-12 5.728-25.728 8.576t-32.576 2.848-37.44-12.288-31.712-35.712q-10.848-18.272-27.712-29.728t-28.288-13.728l-11.424-1.728q-12 0-16.576 2.56t-2.848 6.56 5.152 8 7.424 6.848l4 2.848q12.576 5.728 24.864 21.728t18.016 29.152l5.728 13.152q7.424 21.728 25.152 35.136t38.272 17.152 39.712 4 31.712-2.016l13.152-2.272q0 21.728 0.288 50.56t0.288 31.136q0 10.272-7.424 17.152t-22.848 4q-132.576-44-216.288-158.56t-83.712-258.016q0-119.424 58.848-220.288t159.712-159.712 220.288-58.848zM239.392 703.424q1.728-4-4-6.848-5.728-1.728-7.424 1.152-1.728 4 4 6.848 5.152 3.424 7.424-1.152zM257.12 722.848q4-2.848-1.152-9.152-5.728-5.152-9.152-1.728-4 2.848 1.152 9.152 5.728 5.728 9.152 1.728zM274.272 748.576q5.152-4 0-10.848-4.576-7.424-9.728-3.424-5.152 2.848 0 10.272t9.728 4zM298.272 772.576q4.576-4.576-2.272-10.848-6.848-6.848-11.424-1.728-5.152 4.576 2.272 10.848 6.848 6.848 11.424 1.728zM330.848 786.848q1.728-6.272-7.424-9.152-8.576-2.272-10.848 4t7.424 8.576q8.576 3.424 10.848-3.424zM366.848 789.728q0-7.424-9.728-6.272-9.152 0-9.152 6.272 0 7.424 9.728 6.272 9.152 0 9.152-6.272zM399.968 784q-1.152-6.272-10.272-5.152-9.152 1.728-8 8.576t10.272 4.576 8-8z" p-id="4425"></path></svg>
+              </a>
             </div>
             <p class="font-inter text-sm text-gray-500 lg:mt-0">
-              © Copyright 2021. All rights reserved.
+              © Copyright 2024-2025. All rights reserved.
             </p>
           </div>
         </div>

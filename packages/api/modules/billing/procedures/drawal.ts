@@ -66,9 +66,11 @@ export const withdrawBalance = protectedProcedure.mutation(
       );
 
       // 3. 检查是否达到最小提现额度
-      if (totalWithdrawable < 1000000) {
+      const minWithdrawAmount =
+        Number(process.env.MIN_WITHDRAW_AMOUNT || 21) || 21;
+      if (totalWithdrawable < minWithdrawAmount) {
         throw new Error(
-          "Insufficient balance. Minimum withdrawal amount is 1,000,000 tokens.",
+          "Insufficient balance. Minimum withdrawal amount is 21 tokens.",
         );
       }
 

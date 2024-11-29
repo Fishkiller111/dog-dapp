@@ -40,7 +40,7 @@ export const generateProductNames = protectedProcedure
     const taskCount = await db.task.count({
       where: {
         userId: user.id,
-        status: TaskStatus.DOEN, // 使用枚举值
+        status: TaskStatus.DONE, // 使用枚举值
         OR: [
           // 对于每日任务（签到和分享），只统计今天完成的
           {
@@ -97,7 +97,9 @@ export const generateProductNames = protectedProcedure
       formData.append("file", blob, path.basename(filePath));
 
       // 发送请求到 Python FastAPI 服务器
-      const response = await fetch("http://localhost:8000/predict", {
+      // process.env.AI_API_URL
+      const apiUrl = process.env.AI_API_URL || "http://localhost:8000";
+      const response = await fetch(`${apiUrl}/predict`, {
         method: "POST",
         body: formData as any,
       });
@@ -130,13 +132,13 @@ export const generateProductNames = protectedProcedure
       });
     } finally {
       // 在finally块中删除文件，确保无论成功还是失败都会执行
-      try {
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      } catch (deleteError) {
-        console.error("Error deleting temporary file:", deleteError);
-        // 不抛出删除文件的错误，因为主要操作已经完成
-      }
+      // try {
+      //   if (fs.existsSync(filePath)) {
+      //     fs.unlinkSync(filePath);
+      //   }
+      // } catch (deleteError) {
+      //   console.error("Error deleting temporary file:", deleteError);
+      //   // 不抛出删除文件的错误，因为主要操作已经完成
+      // }
     }
   });

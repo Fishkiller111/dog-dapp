@@ -4,7 +4,7 @@ FROM node:20.13.1
 # 设置工作目录
 WORKDIR /app
 
-ENV NODE_ENV development
+ENV NODE_ENV=development
 
 # 复制当前目录内容到 /app 目录
 COPY . /app
@@ -22,7 +22,7 @@ RUN pnpm build
 
 RUN cd /app && pnpm --registry https://registry.npmmirror.com install
 # 设置环境变量（可选，根据你的实际需求）
-ENV NODE_ENV production
+ENV NODE_ENV=production
 
 # 暴露应用程序运行的端口（根据你的实际应用端口设置）
 EXPOSE 3000

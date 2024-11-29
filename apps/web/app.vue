@@ -12,7 +12,7 @@
 
   const useIdFunction = () => useId();
 
-  const titleTemplateDefault = "supastarter.nuxt - Application";
+  const titleTemplateDefault = "WOOFAI - DAPP";
   const titleDivider = "|";
 
   const i18nHead = useLocaleHead({

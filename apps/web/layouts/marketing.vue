@@ -1,7 +1,7 @@
 <template>
-  <MarketingNavBar />
+  <!-- <MarketingNavBar /> -->
   <main class="min-h-screen">
     <slot />
   </main>
-  <MarketingFooter />
+  <!-- <MarketingFooter /> -->
 </template>

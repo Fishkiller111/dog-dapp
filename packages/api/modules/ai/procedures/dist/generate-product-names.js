@@ -55,7 +55,7 @@ exports.generateProductNames = trpc_1.protectedProcedure
     .query(function (_a) {
     var audio = _a.input.audio, user = _a.ctx.user;
     return __awaiter(void 0, void 0, void 0, function () {
-        var scoreTotalCount, scoreCount, taskCount, uploadDir, filePath, fileBuffer, formData, blob, response, data, error_1;
+        var scoreTotalCount, scoreCount, taskCount, uploadDir, filePath, fileBuffer, formData, blob, apiUrl, response, data, error_1;
         return __generator(this, function (_b) {
             switch (_b.label) {
                 case 0:
@@ -76,7 +76,7 @@ exports.generateProductNames = trpc_1.protectedProcedure
                     return [4 /*yield*/, database_1.db.task.count({
                             where: {
                                 userId: user.id,
-                                status: client_1.TaskStatus.DOEN,
+                                status: client_1.TaskStatus.DONE,
                                 OR: [
                                     // 对于每日任务（签到和分享），只统计今天完成的
                                     {
@@ -127,7 +127,8 @@ exports.generateProductNames = trpc_1.protectedProcedure
                     formData = new FormData();
                     blob = new Blob([fileBuffer], { type: "audio/wav" });
                     formData.append("file", blob, path.basename(filePath));
-                    return [4 /*yield*/, fetch("http://localhost:8000/predict", {
+                    apiUrl = process.env.AI_API_URL || "http://localhost:8000";
+                    return [4 /*yield*/, fetch(apiUrl + "/predict", {
                             method: "POST",
                             body: formData
                         })];
@@ -159,18 +160,7 @@ exports.generateProductNames = trpc_1.protectedProcedure
                         code: "INTERNAL_SERVER_ERROR",
                         message: "Failed to process audio file"
                     });
-                case 7:
-                    // 在finally块中删除文件，确保无论成功还是失败都会执行
-                    try {
-                        if (fs.existsSync(filePath)) {
-                            fs.unlinkSync(filePath);
-                        }
-                    }
-                    catch (deleteError) {
-                        console.error("Error deleting temporary file:", deleteError);
-                        // 不抛出删除文件的错误，因为主要操作已经完成
-                    }
-                    return [7 /*endfinally*/];
+                case 7: return [7 /*endfinally*/];
                 case 8: return [2 /*return*/];
             }
         });

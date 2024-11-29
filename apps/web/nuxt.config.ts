@@ -175,11 +175,11 @@ export default defineNuxtConfig({
     },
   },
 
-  nitro: {
-    routeRules: {
-      "/api/**": {
-        proxy: "https://woofai.io/api/**",
-      },
-    },
-  },
+  // nitro: {
+  //   routeRules: {
+  //     "/api/**": {
+  //       proxy: "https://woofai.io/api/**",
+  //     },
+  //   },
+  // },
 });

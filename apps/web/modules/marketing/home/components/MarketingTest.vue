@@ -23,8 +23,9 @@
     uploadStatus.value = "上传中...";
 
     try {
+      const file = selectedFile.value;
       const formData = new FormData();
-      formData.append("file", selectedFile.value);
+      formData.append("file", file);
 
       const response = await fetch("/api/ai/score", {
         method: "POST",

@@ -1,43 +1,9 @@
 
-<template>
-    <div class="audio-recorder">
-      <canvas v-show="state.isRecording" ref="visualizer" width="600" height="200" class="waveform"></canvas>
-
-      <!-- <div class="controls">
-        <button
-          @click="toggleRecording"
-          :class="{ 'recording': state.isRecording }"
-        >
-          {{ state.isRecording ? '停止录音' : '开始录音' }}
-        </button>
-
-        <button
-          v-if="state.audioUrl"
-          @click="playAudio"
-          :disabled="state.isPlaying"
-          class="play-button"
-        >
-          {{ state.isPlaying ? '播放中...' : '播放录音' }}
-        </button>
-
-        <button
-          v-if="state.audioUrl"
-          @click="downloadAudio"
-          class="download-button"
-        >
-          下载录音
-        </button>
-      </div> -->
-
-      <!-- <audio ref="audioPlayer" :src="state.audioUrl"></audio> -->
-    </div>
-  </template>
-
-  <script setup lang="ts">
+<script setup lang="ts">
   import { ref, onBeforeUnmount } from 'vue'
 
   // 定义接口
-  interface AudioRecorderState {
+  type AudioRecorderState = {
     isRecording: boolean
     isPlaying: boolean
     audioUrl: string
@@ -49,7 +15,7 @@
     animationId: number | null
   }
 
-  interface AudioVisualSettings {
+  type AudioVisualSettings = {
     waveformColor: string
     backgroundColor: string
     fftSize: number
@@ -57,7 +23,7 @@
   }
 
 
-    interface AudioEmits {
+    type AudioEmits = {
         audioResult: string;
     }
 
@@ -123,7 +89,7 @@
             state.value.audioChunks = []
             if (currentSecond < minSecond) {
                 clearVoiceTimer()
-                alert(`最少录制${minSecond}s`)
+                alert(`Record at least 3 seconds${minSecond}`)
             } else {
                 emits('audioResult', state.value.audioUrl)
             }
@@ -137,10 +103,12 @@
 
       // 绘制波形
       const drawWaveform = (): void => {
-        if (!visualizer.value || !state.value.analyser || !state.value.dataArray) return
+        if (!visualizer.value || !state.value.analyser || !state.value.dataArray) 
+return
 
         const canvasCtx = visualizer.value.getContext('2d')
-        if (!canvasCtx) return
+        if (!canvasCtx) 
+return
 
         const width = visualizer.value.width
         const height = visualizer.value.height
@@ -245,7 +213,8 @@
 
       // 播放音频
       const playAudio = (): void => {
-        if (!audioPlayer.value) return
+        if (!audioPlayer.value) 
+return
 
         if (audioPlayer.value.paused) {
           state.value.isPlaying = true
@@ -288,6 +257,40 @@
       })
 
   </script>
+
+  <template>
+    <div class="audio-recorder">
+      <canvas v-show="state.isRecording" ref="visualizer" width="600" height="200" class="waveform"></canvas>
+
+      <!-- <div class="controls">
+        <button
+          @click="toggleRecording"
+          :class="{ 'recording': state.isRecording }"
+        >
+          {{ state.isRecording ? '停止录音' : '开始录音' }}
+        </button>
+
+        <button
+          v-if="state.audioUrl"
+          @click="playAudio"
+          :disabled="state.isPlaying"
+          class="play-button"
+        >
+          {{ state.isPlaying ? '播放中...' : '播放录音' }}
+        </button>
+
+        <button
+          v-if="state.audioUrl"
+          @click="downloadAudio"
+          class="download-button"
+        >
+          下载录音
+        </button>
+      </div> -->
+
+      <!-- <audio ref="audioPlayer" :src="state.audioUrl"></audio> -->
+    </div>
+  </template>
 
   <style scoped>
   .audio-recorder {

@@ -48,64 +48,76 @@ exports.submitTasks = trpc_1.protectedProcedure
     .mutation(function (_a) {
     var taskType = _a.input.taskType, user = _a.ctx.user;
     return __awaiter(void 0, void 0, void 0, function () {
-        var userId, permanentTasks, isPermanentTask, existingTask, todayTask, task;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var userId, PERMANENT_TASKS, getUSDayRange, isPermanentTask, existingTask, _b, dayStart, dayEnd, todayTask, task;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     userId = user.id;
-                    permanentTasks = [
+                    PERMANENT_TASKS = [
                         client_1.TaskType.JOIN_DISCORD,
                         client_1.TaskType.JOIN_TELEGRAM,
                     ];
-                    isPermanentTask = function (type) {
-                        return permanentTasks.includes(type);
+                    getUSDayRange = function () {
+                        var now = new Date();
+                        // 将当前时间转换为美国东部时间
+                        var usDate = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+                        var startOfDay = new Date(usDate);
+                        startOfDay.setHours(0, 0, 0, 0);
+                        var endOfDay = new Date(usDate);
+                        endOfDay.setHours(23, 59, 59, 999);
+                        // 转换回 UTC 时间进行数据库查询
+                        return {
+                            start: new Date(startOfDay),
+                            end: new Date(endOfDay)
+                        };
                     };
+                    isPermanentTask = PERMANENT_TASKS.includes(taskType);
                     if (!isPermanentTask) return [3 /*break*/, 2];
-                    return [4 /*yield*/, database_1.db.task.findUnique({
-                            where: {
-                                userId_type: {
-                                    userId: userId,
-                                    type: taskType
-                                }
-                            }
-                        })];
-                case 1:
-                    existingTask = _b.sent();
-                    if (existingTask) {
-                        throw new Error("Task already completed");
-                    }
-                    _b.label = 2;
-                case 2:
-                    if (!!isPermanentTask) return [3 /*break*/, 4];
                     return [4 /*yield*/, database_1.db.task.findFirst({
                             where: {
                                 userId: userId,
                                 type: taskType,
+                                status: client_1.TaskStatus.DONE
+                            }
+                        })];
+                case 1:
+                    existingTask = _c.sent();
+                    if (existingTask) {
+                        throw new Error("This permanent task has already been completed");
+                    }
+                    return [3 /*break*/, 4];
+                case 2:
+                    _b = getUSDayRange(), dayStart = _b.start, dayEnd = _b.end;
+                    return [4 /*yield*/, database_1.db.task.findFirst({
+                            where: {
+                                userId: userId,
+                                type: taskType,
+                                status: client_1.TaskStatus.DONE,
                                 createdAt: {
-                                    gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
-                                    lt: new Date(new Date().setUTCHours(24, 0, 0, 0))
+                                    gte: dayStart,
+                                    lte: dayEnd
                                 }
                             }
                         })];
                 case 3:
-                    todayTask = _b.sent();
+                    todayTask = _c.sent();
                     if (todayTask) {
-                        throw new Error("Task already completed");
+                        throw new Error("This daily task has already been completed today");
                     }
-                    _b.label = 4;
+                    _c.label = 4;
                 case 4: return [4 /*yield*/, database_1.db.task.create({
                         data: {
                             userId: userId,
                             type: taskType,
-                            status: client_1.TaskStatus.DOEN
+                            status: client_1.TaskStatus.DONE
                         }
                     })];
                 case 5:
-                    task = _b.sent();
-                    if (!task) {
-                        throw new Error("Failed to create task");
-                    }
-                    return [2 /*return*/, task];
+                    task = _c.sent();
+                    return [2 /*return*/, {
+                            success: true,
+                            task: task
+                        }];
             }
         });
     });
@@ -113,69 +125,87 @@ exports.submitTasks = trpc_1.protectedProcedure
 exports.getTaskStatusList = trpc_1.protectedProcedure.query(function (_a) {
     var user = _a.ctx.user;
     return __awaiter(void 0, void 0, void 0, function () {
-        var userId, permanentTaskTypes_1, isPermanentTask_1, permanentTasksStatus_1, dailyTasksStatus_1, allTaskStatus, error_1;
-        return __generator(this, function (_b) {
-            switch (_b.label) {
+        var userId, PERMANENT_TASKS, DAILY_TASKS, getUSDayRange, permanentTasksStatus, _b, dayStart, dayEnd, dailyTasksStatus, completedPermanentTasks_1, completedDailyTasks_1, taskStatusList, error_1;
+        return __generator(this, function (_c) {
+            switch (_c.label) {
                 case 0:
                     userId = user.id;
-                    _b.label = 1;
-                case 1:
-                    _b.trys.push([1, 4, , 5]);
-                    permanentTaskTypes_1 = [
+                    PERMANENT_TASKS = [
                         client_1.TaskType.JOIN_DISCORD,
                         client_1.TaskType.JOIN_TELEGRAM,
                     ];
-                    isPermanentTask_1 = function (type) {
-                        return permanentTaskTypes_1.includes(type);
+                    DAILY_TASKS = [
+                        client_1.TaskType.DAILY_CHECKIN,
+                        client_1.TaskType.SHARE_DISCORD,
+                        client_1.TaskType.SHARE_TELEGRAM,
+                    ];
+                    getUSDayRange = function () {
+                        var now = new Date();
+                        // 将当前时间转换为美国东部时间
+                        var usDate = new Date(now.toLocaleString("en-US", { timeZone: "America/New_York" }));
+                        var startOfDay = new Date(usDate);
+                        startOfDay.setHours(0, 0, 0, 0);
+                        var endOfDay = new Date(usDate);
+                        endOfDay.setHours(23, 59, 59, 999);
+                        // 转换回 UTC 时间进行数据库查询
+                        return {
+                            start: new Date(startOfDay),
+                            end: new Date(endOfDay)
+                        };
                     };
+                    _c.label = 1;
+                case 1:
+                    _c.trys.push([1, 4, , 5]);
                     return [4 /*yield*/, database_1.db.task.findMany({
                             where: {
                                 userId: userId,
                                 type: {
-                                    "in": Array.from(permanentTaskTypes_1)
+                                    "in": PERMANENT_TASKS
                                 },
-                                status: client_1.TaskStatus.DOEN
+                                status: client_1.TaskStatus.DONE
+                            },
+                            select: {
+                                type: true
                             }
                         })];
                 case 2:
-                    permanentTasksStatus_1 = _b.sent();
+                    permanentTasksStatus = _c.sent();
+                    _b = getUSDayRange(), dayStart = _b.start, dayEnd = _b.end;
                     return [4 /*yield*/, database_1.db.task.findMany({
                             where: {
                                 userId: userId,
                                 type: {
-                                    "in": [
-                                        client_1.TaskType.DAILY_CHECKIN,
-                                        client_1.TaskType.SHARE_DISCORD,
-                                        client_1.TaskType.SHARE_TELEGRAM,
-                                    ]
+                                    "in": DAILY_TASKS
                                 },
-                                status: client_1.TaskStatus.DOEN,
+                                status: client_1.TaskStatus.DONE,
                                 createdAt: {
-                                    gte: new Date(new Date().setUTCHours(0, 0, 0, 0)),
-                                    lt: new Date(new Date().setUTCHours(24, 0, 0, 0))
+                                    gte: dayStart,
+                                    lte: dayEnd
                                 }
+                            },
+                            select: {
+                                type: true
                             }
                         })];
                 case 3:
-                    dailyTasksStatus_1 = _b.sent();
-                    allTaskStatus = Object.values(client_1.TaskType).map(function (taskType) { return ({
+                    dailyTasksStatus = _c.sent();
+                    completedPermanentTasks_1 = new Set(permanentTasksStatus.map(function (task) { return task.type; }));
+                    completedDailyTasks_1 = new Set(dailyTasksStatus.map(function (task) { return task.type; }));
+                    taskStatusList = Object.values(client_1.TaskType).map(function (taskType) { return ({
                         type: taskType,
-                        status: isPermanentTask_1(taskType)
-                            ? permanentTasksStatus_1.some(function (task) { return task.type === taskType; })
-                                ? client_1.TaskStatus.DOEN
+                        status: PERMANENT_TASKS.includes(taskType)
+                            ? completedPermanentTasks_1.has(taskType)
+                                ? client_1.TaskStatus.DONE
                                 : client_1.TaskStatus.PENDING
-                            : dailyTasksStatus_1.some(function (task) { return task.type === taskType; })
-                                ? client_1.TaskStatus.DOEN
+                            : completedDailyTasks_1.has(taskType)
+                                ? client_1.TaskStatus.DONE
                                 : client_1.TaskStatus.PENDING
                     }); });
-                    return [2 /*return*/, allTaskStatus];
+                    return [2 /*return*/, taskStatusList];
                 case 4:
-                    error_1 = _b.sent();
+                    error_1 = _c.sent();
                     console.error("Error getting task status list:", error_1);
-                    return [2 /*return*/, Object.values(client_1.TaskType).map(function (type) { return ({
-                            type: type,
-                            status: client_1.TaskStatus.PENDING
-                        }); })];
+                    throw new Error("Failed to get task status list");
                 case 5: return [2 /*return*/];
             }
         });
