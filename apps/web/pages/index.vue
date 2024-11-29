@@ -29,16 +29,20 @@ const balanceInquiry = ref<balanceInquiryType>({
 const  selectedIndex = ref(0)
 const navList = [{
     name: 'IDO',
-    route: '#'
+    route: '#',
+    target: '_self'
 },{
     name: 'Trade',
-    route: '#'
+    route: '#',
+    target: '_self'
 },{
     name: 'Stake',
-    route: '#'
+    route: '#',
+    target: '_self'
 },{
     name: 'Docs',
-    route: 'https://docs.woofai.io'
+    route: 'https://docs.woofai.io',
+    target: '_blank'
 }]
 
 const statusMap = ref({
@@ -82,8 +86,11 @@ const handleLogin = () => {
 }
 const selectNavItem = (index: number) => {
       selectedIndex.value = index
-      // navigateTo新窗口打开
-      window.open(navList[index].route)
+      if (navList[index].target === '_blank') {
+          window.open(navList[index].route)
+      } else {
+        navigateTo(navList[index].route)
+      }
 }
 const handleSessionCb = (cb?:Function) => {
     if (!isLogin.value) {
@@ -218,15 +225,15 @@ const handleTab = async (type: string) => {
 
     if (type === 'Daily') {
         fetchScore('DAILY_CHECKIN')
-        copyText(TASK_TYPES_MAP['DAILY_CHECKIN'])
+        copyText(TASK_TYPES_MAP.DAILY_CHECKIN)
     }
     if (type === 'Discord') {
         fetchScore('JOIN_DISCORD')
-        window.open(TASK_TYPES_MAP['JOIN_DISCORD'])
+        window.open(TASK_TYPES_MAP.JOIN_DISCORD)
     }
     if (type === 'Telegram') {
         fetchScore('JOIN_TELEGRAM')
-        window.open(TASK_TYPES_MAP['JOIN_TELEGRAM'])
+        window.open(TASK_TYPES_MAP.JOIN_TELEGRAM)
     }
 }
 
@@ -240,11 +247,11 @@ const TASK_TYPES = [
   type TaskType = (typeof TASK_TYPES)[number];
 
 const TASK_TYPES_MAP = {
-    DAILY_CHECKIN: "Daily Check-In",
-    JOIN_DISCORD: "https://discord.gg/mcVsS8nf",
-    JOIN_TELEGRAM: "Join Telegram",
-    SHARE_DISCORD: " https://discord.com/invite/mcVsS8nf",
-    SHARE_TELEGRAM: "https://discord.com/invite/mcVsS8nf",
+    DAILY_CHECKIN: "https://woofai.io",
+    JOIN_DISCORD: "https://discord.com/invite/mcVsS8nf",
+    JOIN_TELEGRAM: "https://t.me/woof_AI",
+    SHARE_DISCORD: " https://discord.gg/mcVsS8nf",
+    SHARE_TELEGRAM: "https://t.me/woof_AI",
   } as const;
 
 const copyText = async (textToCopy: string) => {
@@ -447,7 +454,6 @@ src="/images/logo-text.png" alt="Our application"
                 >
               </div>
               <div  v-if="isLogin">
-                <!-- <p class="mt-2" v-if="walletAddress">Wallet Address：{{walletAddress}}</p> -->
                 <p class="mt-2">balanceInquiry：{{balanceInquiry.withdrawable}}</p>
                 <p class="mt-2">pending：{{balanceInquiry.pending}}</p>
                 <p class="mt-2">completed：{{balanceInquiry.completed}}</p>
@@ -474,7 +480,7 @@ src="/images/logo-text.png" alt="Our application"
                             </h2>
                             <div class="mx-auto flex max-w-[630px] flex-col items-center justify-center">
                             <p class="mb-2 rounded-lg border-2 border-[#0C0E0C] bg-[#fbf8f5] px-4 py-2 text-lg text-[#0C0E0C] [box-shadow:#B8B6B5_0px_4px]">
-                              border2+drop shadow coming soon
+                              Powering the Next-Gen Subnet on Bittensor
                             </p>
                             <h3 class="mt-4 text-xl font-semibold">Raised</h3>
                             <p class="pt-10 text-4xl font-semibold">$TAO <span class="ml-2">10</span></p>
@@ -495,6 +501,11 @@ src="/images/logo-text.png" alt="Our application"
                             class="mb-4 rounded-3xl  border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4 font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
                             >Explore Hash</Button
                         >
+                        <!-- <div class="mt-2">Wallet Address：<p>5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL</p></div> -->
+                        <div class="mt-2">
+                          <span>Wallet Address：</span>
+                          <p class="break-all">5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL</p>
+                        </div>
                         </div>
                     </div>
                     </div>
@@ -759,7 +770,7 @@ src="/images/logo-text.png" alt="Our application"
             class="ml-2 block w-28 rounded-xl object-cover" />
               </a>
               <p class="font-inter my-4 max-w-[350px] text-base font-light">
-                https://discord.com/invite/mcVsS8nf
+                THE WOOFAI SUBNET ON BITTENSOR
               </p>
               <!-- NEWSLETTER & EMAIL -->
               <div class="flex flex-col">
@@ -836,6 +847,15 @@ src="/images/logo-text.png" alt="Our application"
                   />
                 </svg>
               </a> -->
+              <!-- tg -->
+              <a href="https://t.me/woof_AI" target="_blank" class="mx-4 transition hover:text-gray-400">
+                <svg class="fill-current" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="6175" width="25" height="25"><path d="M679.428571 746.857143l84-396q5.142857-25.142857-6-36t-29.428571-4L234.285714 501.142857q-16.571429 6.285714-22.571428 14.285714t-1.428572 15.142858 18.285715 11.142857l126.285714 39.428571 293.142857-184.571428q12-8 18.285714-3.428572 4 2.857143-2.285714 8.571429l-237.142857 214.285714-9.142857 130.285714q13.142857 0 25.714285-12.571428l61.714286-59.428572 128 94.285715q36.571429 20.571429 46.285714-21.714286z m344.571429-234.857143q0 104-40.571429 198.857143t-109.142857 163.428571-163.428571 109.142857-198.857143 40.571429-198.857143-40.571429-163.428571-109.142857-109.142857-163.428571T0 512t40.571429-198.857143 109.142857-163.428571T313.142857 40.571429 512 0t198.857143 40.571429 163.428571 109.142857 109.142857 163.428571 40.571429 198.857143z" p-id="6176"></path></svg>
+              </a>
+              <!-- discord -->
+              <a href="https://discord.gg/mcVsS8nf" target="_blank" class="mx-4 transition hover:text-gray-400">
+                <svg class="fill-current" viewBox="0 0 1025 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4252" width="25" height="25"><path d="M513.461465 511.512845m-511.512845 0a511.512845 511.512845 0 1 0 1023.02569 0 511.512845 511.512845 0 1 0-1023.02569 0Z" fill="#0B121C" p-id="4253"></path><path d="M513.461465 309.830637c-125.198858 0-212.886775 53.58706-212.886774 53.58706 48.228354-42.869648 132.019029-67.714558 132.019029-67.714557l-7.794481-7.794482c-78.919125 1.461465-150.530923 56.022835-150.530923 56.022836-80.38059 167.581351-75.021884 312.753568-75.021884 312.753568 65.278782 84.764986 162.7098 78.43197 162.7098 78.431969l33.126546-41.895337c-58.458611-12.666032-95.482398-64.304472-95.482397-64.304472s87.687916 59.920076 213.861084 59.920076 213.861085-59.920076 213.861085-59.920076-37.023787 52.125595-95.482398 64.304472l33.126546 41.895337s96.943863 6.333016 162.709801-78.431969c0 0 5.358706-144.685062-75.509039-312.753568 0 0-71.611798-54.56137-150.530923-56.022836l-7.794482 7.794482s84.277831 24.84491 132.01903 67.714557c0.97431 0-87.200761-53.58706-212.39962-53.58706M417.004757 486.667935c30.203616 0 55.048525 26.79353 54.56137 59.432921 0 32.152236-24.357755 59.432921-54.56137 59.432921-29.716461 0-54.074215-27.280685-54.074215-59.432921 0-32.639391 23.383444-59.432921 54.074215-59.432921m194.862037 0c30.203616 0 54.56137 26.79353 54.56137 59.432921 0 32.152236-24.357755 59.432921-54.56137 59.432921-29.716461 0-54.074215-27.280685-54.074216-59.432921 0-32.639391 23.383444-59.432921 54.074216-59.432921z" fill="#FFFFFF" p-id="4254"></path></svg>
+              </a>
+              <!-- twitter -->
               <a href="https://x.com/WoofAI_" target="_blank" class="mx-4 transition hover:text-gray-400">
                 <svg
                   class="fill-current"
@@ -849,6 +869,7 @@ src="/images/logo-text.png" alt="Our application"
                   />
                 </svg>
               </a>
+              <!-- github -->
               <a
                 href="https://github.com/Woof-AI" target="_blank"
                 class="mx-4 transition hover:text-gray-400">
