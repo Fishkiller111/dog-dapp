@@ -102,6 +102,38 @@ export const withdrawBalance = protectedProcedure.mutation(
           },
         });
 
+        // 1、查询用户的钱包地址
+        const userInfo = await db.user.findUnique({
+          where: {
+            id: user.id,
+          },
+          select: {
+            walletAddress: true,
+          },
+        });
+        if (!userInfo || !userInfo.walletAddress) {
+          throw new Error("User wallet address not found");
+        }
+        const walletAddress = userInfo.walletAddress;
+        // 异步调用提现API
+        // GATEWAY_URL
+        const gatewayUrl = process.env.GATEWAY_URL || "http://localhost:5200";
+        fetch(`${gatewayUrl}/transfer`, {
+          headers: {
+            accept: "application/json",
+            "content-type": "application/json",
+          },
+          body: JSON.stringify({
+            to: walletAddress,
+            amount: totalWithdrawable,
+          }),
+          method: "POST",
+        })
+          .then((res) => res.json())
+          .catch((error) => {
+            console.log("Error transferring tokens:", error);
+          });
+
         // 模拟处理时间
         await new Promise((resolve) => setTimeout(resolve, 2000));
 

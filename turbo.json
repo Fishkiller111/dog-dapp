@@ -37,7 +37,8 @@
     "POSTMARK_API_KEY",
     "POSTMARK_SERVER_TOKEN",
     "MIN_WITHDRAW_AMOUNT",
-    "FUNDRAISING_GOAL"
+    "FUNDRAISING_GOAL",
+    "GATEWAY_URL"
   ],
   "tasks": {
     "build": {
