@@ -9,6 +9,8 @@
   const { apiCaller } = useApiCaller();
 
   const { toast, dismiss: dismissToast } = useToast();
+  const { toast: toast2 } = useToast();
+
 
   type balanceInquiryType = {withdrawable: number; pending: number; completed: number}
 
@@ -119,7 +121,7 @@ const fetchBalance = async () => {
       console.log('fetchBalance error');
       return;
     }
-    
+
     balanceInquiry.value = res as unknown as balanceInquiryType;
     // console.log('balanceInquiry.value===', balanceInquiry.value)
 }
@@ -155,26 +157,22 @@ const handleWithDraw = async () => {
     })
 }
 
-const handleAudioResult = async (audioRes: Blob) => {
+const handleAudioResult = async (audioRes: string) => {
     // console.log('voice result ===', audioRes)
     try {
         isUploading.value = true
-    //  const file = new File([audioRes], "voice.wav", { type: audioRes.type });
-     const file = new File([audioRes], "voice.wav", { 
-          type: "audio/wav"  // 明确指定 MIME type
-      });
+        isRecording.value = false
 
+        const blobResponse = await fetch(audioRes);
+        const audioBlob = await blobResponse.blob();
 
-      // 可选：添加日志来检查文件
-      console.log("File type:", file.type);
-      console.log("File size:", file.size);
+        const formData = new FormData();
+        formData.append('file', audioBlob, 'voice.wav');
 
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch("/api/ai/score", {
-        method: "POST",
-        body: formData,
-      });
+        const response = await fetch("/api/ai/score", {
+            method: "POST",
+            body: formData,
+        });
 
       const result = await response.json();
 
@@ -207,7 +205,7 @@ const handleAudioResult = async (audioRes: Blob) => {
 }
 
 
-const handleTab = async (type: string, url: string) => {
+const handleTab = async (type: string) => {
     const comeSoon = ['Trade', 'Stake']
     if (comeSoon.includes(type)) {
         toast({
@@ -223,12 +221,15 @@ const handleTab = async (type: string, url: string) => {
 
     if (type === 'Daily') {
         fetchScore('DAILY_CHECKIN')
+        copyText(TASK_TYPES_MAP['DAILY_CHECKIN'])
     }
     if (type === 'Discord') {
         fetchScore('JOIN_DISCORD')
+        window.open(TASK_TYPES_MAP['JOIN_DISCORD'])
     }
     if (type === 'Telegram') {
         fetchScore('JOIN_TELEGRAM')
+        window.open(TASK_TYPES_MAP['JOIN_TELEGRAM'])
     }
 }
 
@@ -243,16 +244,16 @@ const TASK_TYPES = [
 
 const TASK_TYPES_MAP = {
     DAILY_CHECKIN: "Daily Check-In",
-    JOIN_DISCORD: "https://discord.com/invite/mcVsS8nf",
+    JOIN_DISCORD: "https://discord.gg/mcVsS8nf",
     JOIN_TELEGRAM: "Join Telegram",
-    SHARE_DISCORD: "https://discord.com/invite/mcVsS8nf",
+    SHARE_DISCORD: " https://discord.com/invite/mcVsS8nf",
     SHARE_TELEGRAM: "https://discord.com/invite/mcVsS8nf",
   } as const;
 
 const copyText = async (textToCopy: string) => {
   try {
     await navigator.clipboard.writeText(textToCopy)
-    toast({
+    toast2({
         variant: "success",
         title: `Copy: ${textToCopy} !`,
     });
@@ -261,12 +262,6 @@ const copyText = async (textToCopy: string) => {
   }
 }
 const fetchScore = (type: TaskType, cb?: any) => {
-    if (type.includes('SHARE')) {
-        copyText(TASK_TYPES_MAP[type])
-    } else {
-      window.open(TASK_TYPES_MAP[type])
-    }
-
     handleSessionCb(async () => {
         try {
             await apiCaller.task.submitTasks.mutate({
@@ -291,6 +286,7 @@ const fetchScore = (type: TaskType, cb?: any) => {
 const handleShare = (type: TaskType): void => {
     // console.log('handleShare', type)
     fetchScore(type)
+    copyText(TASK_TYPES_MAP[type])
 }
 
 
@@ -299,7 +295,6 @@ const handleShare = (type: TaskType): void => {
   <template>
     <div class="relative bg-[#FBF8F5]">
       <!-- <MarketingTest /> -->
-
       <!-- Navbar Dropdown 1 row -->
       <nav
         class="font-inter top-0 z-20 mx-auto mb-12 h-auto w-full bg-white lg:sticky"
@@ -844,7 +839,7 @@ src="/images/logo-text.png" alt="Our application"
                   />
                 </svg>
               </a> -->
-              <a href="https://x.com/WoofAI_io" target="_blank" class="mx-4 transition hover:text-gray-400">
+              <a href="https://x.com/WoofAI_" target="_blank" class="mx-4 transition hover:text-gray-400">
                 <svg
                   class="fill-current"
                   width="25"

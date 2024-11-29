@@ -2,7 +2,7 @@ import { computed, ref } from "vue";
 import type { Component, VNode } from "vue";
 import type { ToastProps } from ".";
 
-const TOAST_LIMIT = 1;
+const TOAST_LIMIT = 2;
 const TOAST_REMOVE_DELAY = 1000000;
 
 export type StringOrVNode = string | VNode | (() => VNode);
@@ -23,7 +23,7 @@ const actionTypes = {
 
 let count = 0;
 
-function genId() {
+function genId () {
   count = (count + 1) % Number.MAX_VALUE;
   return count.toString();
 }
@@ -54,7 +54,7 @@ type State = {
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
 
-function addToRemoveQueue(toastId: string) {
+function addToRemoveQueue (toastId: string) {
   if (toastTimeouts.has(toastId)) {
     return;
   }
@@ -74,7 +74,7 @@ const state = ref<State>({
   toasts: [],
 });
 
-function dispatch(action: Action) {
+function dispatch (action: Action) {
   switch (action.type) {
     case actionTypes.ADD_TOAST:
       state.value.toasts = [action.toast, ...state.value.toasts].slice(
@@ -124,7 +124,7 @@ function dispatch(action: Action) {
   }
 }
 
-function useToast() {
+function useToast () {
   return {
     toasts: computed(() => state.value.toasts),
     toast,
@@ -135,7 +135,7 @@ function useToast() {
 
 type Toast = Omit<ToasterToast, "id">;
 
-function toast(props: Toast) {
+function toast (props: Toast) {
   const id = genId();
 
   const update = (props: ToasterToast) =>
