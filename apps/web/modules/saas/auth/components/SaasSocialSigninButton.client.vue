@@ -96,40 +96,156 @@
 
   const walletAddress = ref<string>("");
   const isConnecting = ref<boolean>(false);
+
+
+  // 检测是否为移动设备
+  const isMobile = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  };
+
+  // Deep Link 配置
+  const DEEP_LINKS = {
+    metamask: (url: string) => `https://metamask.app.link/dapp/${url}`,
+    trustwallet: (url: string) => `https://link.trustwallet.com/open_url?url=${url}`,
+    tokenPocket: (url: string) => `tpdapp://open?params={"url":"${url}"}`,
+  };
+
+  // 获取当前 dApp URL
+  const getDappUrl = () => {
+    const url = window.location.href;
+    // 移除 http:// 或 https:// 
+    return url.replace(/^https?:\/\//, '');
+  };
+
+  const connectWithDeepLink = () => {
+    const dappUrl = getDappUrl();
+    // 默认使用 MetaMask deep link
+    const deepLink = DEEP_LINKS.metamask(dappUrl);
+    
+    // 可以添加一个选择钱包的 UI
+    // const selectedWallet = 'metamask'; // 或 'trustwallet' 或 'tokenPocket'
+    // const deepLink = DEEP_LINKS[selectedWallet](dappUrl);
+
+    // 跳转到钱包
+    window.location.href = deepLink;
+  };
   const login = async () => {
-    const ethereum = (window as any).ethereum;
-    if (!ethereum) {
-      alert("Please install MetaMask!");
-      return
-    }
+    isConnecting.value = true;
 
     try {
-      isConnecting.value = true;
-      // 创建 provider
-      const provider = new ethers.providers.Web3Provider(ethereum);
-      // 请求连接钱包
-      await provider.send("eth_requestAccounts", []);
-      // 获取 signer
-      const signer = provider.getSigner();
-      // 获取地址
-      const address = await signer.getAddress();
-      walletAddress.value = address;
+      if (isMobile()) {
+        const ethereum = (window as any).ethereum;
+        
+        if (ethereum?.isMetaMask) {
+          // 已在钱包内置浏览器中
+          const provider = new ethers.providers.Web3Provider(ethereum);
+          
+          // 切换到指定网络
+          try {
+            await ethereum.request({
+              method: 'wallet_switchEthereumChain',
+              params: [{ chainId: `0x${(945).toString(16)}` }],
+            });
+          } catch (error: any) {
+            if (error.code === 4902) {
+              // 添加网络
+              await ethereum.request({
+                method: 'wallet_addEthereumChain',
+                params: [{
+                  chainId: `0x${(945).toString(16)}`,
+                  chainName: 'Opentensor Testnet',
+                  nativeCurrency: {
+                    name: 'TAO',
+                    symbol: 'TAO',
+                    decimals: 18
+                  },
+                  rpcUrls: ['https://evm-testnet.dev.opentensor.ai']
+                }]
+              });
+            }
+          }
+
+          // 请求连接钱包
+          await provider.send("eth_requestAccounts", []);
+          const signer = provider.getSigner();
+          const address = await signer.getAddress();
+          walletAddress.value = address;
+
+          // 登录处理
+          try {
+            await apiCaller.auth.loginWithAddress.mutate({
+              walletAddress: address,
+            });
+            sessionStorage.setItem('__USER_TOKEN__', address);
+            navigateTo("/");
+          } catch (error) {
+            console.error("Login error:", error);
+            alert("Login failed");
+          }
+        } else {
+          // 不在钱包内置浏览器中，使用 Deep Link
+          connectWithDeepLink();
+           // 终止后续操作，等待重定向
+        }
+      } else {
+        // 桌面端处理
+        const ethereum = (window as any).ethereum;
+        if (!ethereum) {
+          alert("Please install MetaMask!");
+          return;
+        }
+
+        const provider = new ethers.providers.Web3Provider(ethereum);
+        
+        // 切换网络
+        try {
+          await ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: `0x${(945).toString(16)}` }],
+          });
+        } catch (error: any) {
+          if (error.code === 4902) {
+            await ethereum.request({
+              method: 'wallet_addEthereumChain',
+              params: [{
+                chainId: `0x${(945).toString(16)}`,
+                chainName: 'Opentensor Testnet',
+                nativeCurrency: {
+                  name: 'TAO',
+                  symbol: 'TAO',
+                  decimals: 18
+                },
+                rpcUrls: ['https://evm-testnet.dev.opentensor.ai']
+              }]
+            });
+          }
+        }
+
+        await provider.send("eth_requestAccounts", []);
+        const signer = provider.getSigner();
+        const address = await signer.getAddress();
+        walletAddress.value = address;
+
+        // 登录处理
+        try {
+          await apiCaller.auth.loginWithAddress.mutate({
+            walletAddress: address,
+          });
+          sessionStorage.setItem('__USER_TOKEN__', address);
+          navigateTo("/");
+        } catch (error) {
+          console.error("Login error:", error);
+          alert("Login failed");
+        }
+      }
     } catch (error) {
-      console.error("连接错误:", error);
-      alert("连接失败");
+      console.error("Connection error:", error);
+      alert("Connection failed");
     } finally {
       isConnecting.value = false;
     }
-    try {
-        await apiCaller.auth.loginWithAddress.mutate({
-            walletAddress: walletAddress.value,
-        });
-        sessionStorage.setItem('__USER_TOKEN__', walletAddress.value)
-        navigateTo("/");
-    } catch (error) {
-
-    }
-
   };
 </script>
 
