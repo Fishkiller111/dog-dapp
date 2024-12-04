@@ -219,8 +219,6 @@ const handleAudioResult = async (audioRes: Blob) => {
             variant: "success",
             title: res.result ? `Thank you for uploading the dog bark sound, you have received ${res.score} tokens.`:`The uploaded sound is not a dog barking.`,
         });
-        console.log(444444444444, res);
-        
         fetchBalance()
         await getRemainingScoreCount()
       }
@@ -291,6 +289,19 @@ const copyText = async (textToCopy: string) => {
   } catch (err) {
     console.error('复制失败:', err)
   }
+}
+function truncateString(str: string): string {
+  // 如果字符串长度小于等于12，直接返回原字符串
+  if (str.length <= 12) {
+    return str;
+  }
+  
+  // 获取前8位和后4位
+  const prefix = str.slice(0, 8);
+  const suffix = str.slice(-4);
+  
+  // 拼接结果
+  return `${prefix}...${suffix}`;
 }
 const fetchScore = (type: TaskType, cb?: any) => {
     handleSessionCb(async () => {
@@ -404,7 +415,7 @@ src="/images/logo-text.png" alt="Our application"
             <Button
             class="relative mr-5 inline-block w-fit rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-8 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] hover:border-[#0C0E0C] md:mr-6"
             @click="handleLogin"
-            >{{isLogin ? 'Disconnect' : 'Wallet'}}</Button
+            >{{isLogin ? truncateString(walletAddress) : 'Wallet'}}</Button
             >
           </div>
           <!-- BURGER MENU -->
@@ -514,9 +525,23 @@ src="/images/logo-text.png" alt="Our application"
                             <p class="pt-10 text-4xl font-semibold">$TAO <span class="ml-2">10</span></p>
                             </div>
                         </div>
+                        <!-- <div class="mb-4">
+                          <span>Wallet Address：</span>
+                          <p class="break-all">
+                            <span>5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL</span>
+                            <span>
+                              <svg viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="4240" width="14" height="14"><path d="M878.250667 981.333333H375.338667a104.661333 104.661333 0 0 1-104.661334-104.661333V375.338667a104.661333 104.661333 0 0 1 104.661334-104.661334h502.912a104.661333 104.661333 0 0 1 104.661333 104.661334v502.912C981.333333 934.485333 934.485333 981.333333 878.250667 981.333333zM375.338667 364.373333a10.666667 10.666667 0 0 0-10.922667 10.965334v502.912c0 6.229333 4.693333 10.922667 10.922667 10.922666h502.912a10.666667 10.666667 0 0 0 10.922666-10.922666V375.338667a10.666667 10.666667 0 0 0-10.922666-10.922667H375.338667z" fill="#172B4D" p-id="4241"></path><path d="M192.597333 753.322667H147.328A104.661333 104.661333 0 0 1 42.666667 648.661333V147.328A104.661333 104.661333 0 0 1 147.328 42.666667H650.24a104.661333 104.661333 0 0 1 104.618667 104.661333v49.962667c0 26.538667-20.309333 46.848-46.848 46.848a46.037333 46.037333 0 0 1-46.848-46.848V147.328a10.666667 10.666667 0 0 0-10.922667-10.965333H147.328a10.666667 10.666667 0 0 0-10.965333 10.965333V650.24c0 6.229333 4.693333 10.922667 10.965333 10.922667h45.269333c26.538667 0 46.848 20.309333 46.848 46.848 0 26.538667-21.845333 45.312-46.848 45.312z" fill="#172B4D" p-id="4242"></path></svg>
+                            </span>
+                          </p>
+                        </div> -->
                         <div class="mb-4">
                           <span>Wallet Address：</span>
-                          <p class="break-all">5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL</p>
+                          <p class="break-all">
+                            5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL<svg @click="copyText('5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL')" class="ml-1 inline-block hover:cursor-pointer" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em">
+                              <path d="M878.250667 981.333333H375.338667a104.661333 104.661333 0 0 1-104.661334-104.661333V375.338667a104.661333 104.661333 0 0 1 104.661334-104.661334h502.912a104.661333 104.661333 0 0 1 104.661333 104.661334v502.912C981.333333 934.485333 934.485333 981.333333 878.250667 981.333333zM375.338667 364.373333a10.666667 10.666667 0 0 0-10.922667 10.965334v502.912c0 6.229333 4.693333 10.922667 10.922667 10.922666h502.912a10.666667 10.666667 0 0 0 10.922666-10.922666V375.338667a10.666667 10.666667 0 0 0-10.922666-10.922667H375.338667z"></path>
+                              <path d="M192.597333 753.322667H147.328A104.661333 104.661333 0 0 1 42.666667 648.661333V147.328A104.661333 104.661333 0 0 1 147.328 42.666667H650.24a104.661333 104.661333 0 0 1 104.618667 104.661333v49.962667c0 26.538667-20.309333 46.848-46.848 46.848a46.037333 46.037333 0 0 1-46.848-46.848V147.328a10.666667 10.666667 0 0 0-10.922667-10.965333H147.328a10.666667 10.666667 0 0 0-10.965333 10.965333V650.24c0 6.229333 4.693333 10.922667 10.965333 10.922667h45.269333c26.538667 0 46.848 20.309333 46.848 46.848 0 26.538667-21.845333 45.312-46.848 45.312z"></path>
+                            </svg>
+                          </p>
                         </div>
                         <Button
                             class="rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4  font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
@@ -529,10 +554,12 @@ src="/images/logo-text.png" alt="Our application"
 
                             <div class="w-20 rounded-2xl border-2 border-[#0C0E0C] bg-white py-10 text-xl font-bold [box-shadow:rgb(0,0,0)_0px_4px]">WTAO</div>
                         </div>
-                        <Button
+                        <a target="_blank"href="https://bittensor.com/scan/address/5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL">
+                          <Button
                             class="mb-4 rounded-3xl  border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4 font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
                             >Explore Hash</Button
-                        >
+                          >
+                        </a>
                         <!-- <div class="mt-2">Wallet Address：<p>5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL</p></div> -->
                       
                         </div>

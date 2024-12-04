@@ -125,11 +125,6 @@ export const generateProductNames = protectedProcedure
           tempData.result === "非狗叫" ? 0 : Math.floor(Math.random() * 5) + 1,
       };
 
-      // 0～1: 0
-      // 1～2:5
-      // 2～3:10
-      // 3～4:15
-      // 4～5:20
       const tokenMap = {
         0: 0,
         1: 5,
@@ -142,6 +137,7 @@ export const generateProductNames = protectedProcedure
           data: {
             userId: user.id,
             score: tokenMap[data.score],
+            Token: tokenMap[data.score],
           },
         })
         .catch((error) => {
@@ -150,7 +146,7 @@ export const generateProductNames = protectedProcedure
 
       return {
         result: tempData.result !== "非狗叫",
-        score: data.score,
+        score: tokenMap[data.score],
       };
     } catch (error) {
       console.error("Error:", error);

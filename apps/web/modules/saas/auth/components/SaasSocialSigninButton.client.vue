@@ -226,6 +226,7 @@
         await provider.send("eth_requestAccounts", []);
         const signer = provider.getSigner();
         const address = await signer.getAddress();
+        // const address = "0xee49640EB7e656D84ba9576b4c277738f25D65d8"
         walletAddress.value = address;
 
         // 登录处理
