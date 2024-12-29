@@ -1,0 +1,1 @@
+export { default } from "E:/Web3/woof/woof-dapp/dog-dapp-code/node_modules/.pnpm/@nuxt+image@1.8.1_ioredis@5.4.1_magicast@0.3.5_rollup@4.27.3/node_modules/@nuxt/image/dist/runtime/components/NuxtImg.vue"
