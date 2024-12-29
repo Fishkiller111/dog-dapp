@@ -1,7 +1,9 @@
 <script lang="tsx">
   import { ethers } from "ethers";
+  import { ref } from 'vue';
 
   const { apiCaller } = useApiCaller();
+
 
   export const oAuthProviders: {
     [key: string]: { name: string; icon: Component };
@@ -86,6 +88,92 @@
 </script>
 
 <script setup lang="tsx">
+  type SaveResult = {
+  saved: boolean
+  existed: boolean
+  uploaded: boolean
+ }
+  type AddressStorage = {
+  taoAddress: string
+  timestamp: number
+  uploaded?: boolean
+  r2ObjectKey?: string  // 新增R2对象键值
+ }
+ // R2上传函数
+ const uploadToR2 = async (address: string): Promise<{success: boolean, objectKey?: string}> => {
+  try {
+    const response = await fetch('/api/r2/upload', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ address })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Upload failed: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return {
+      success: true,
+      objectKey: data.objectKey
+    };
+  } catch (error) {
+    console.error('Upload failed:', error);
+    return {
+      success: false
+    };
+  }
+ };
+
+ // 保存地址函数
+ const saveAddress = async (address: string): Promise<SaveResult> => {
+  try {
+    const storageKey = 'verified_tao_addresses'
+    const existingData = localStorage.getItem(storageKey)
+    let addresses: AddressStorage[] = []
+
+    if (existingData) {
+      addresses = JSON.parse(existingData)
+      const existingAddress = addresses.find(item => item.taoAddress === address)
+      if (existingAddress) {
+        return {
+          saved: true,
+          existed: true,
+          uploaded: !!existingAddress.uploaded
+        }
+      }
+    }
+
+    // 上传新地址到R2
+    const {success: uploaded, objectKey} = await uploadToR2(address)
+    
+    const newAddress: AddressStorage = {
+      taoAddress: address,
+      timestamp: Date.now(),
+      uploaded,
+      r2ObjectKey: objectKey
+    }
+    
+    addresses.push(newAddress)
+    localStorage.setItem(storageKey, JSON.stringify(addresses))
+    
+    return {
+      saved: true,
+      existed: false,
+      uploaded
+    }
+  } catch (error) {
+    console.error('Failed to save address:', error)
+    return {
+      saved: false,
+      existed: false,
+      uploaded: false
+    }
+  }
+ }
+
   const props = defineProps<{
     provider: string;
   }>();
@@ -93,10 +181,12 @@
   const providerData = computed(() => {
     return oAuthProviders[props.provider as keyof typeof oAuthProviders];
   });
-
+ 
   const walletAddress = ref<string>("");
   const isConnecting = ref<boolean>(false);
-
+  const showModal = ref(false);
+  const taoAddress = ref('');
+  const isValidating = ref(false);
 
   // 检测是否为移动设备
   const isMobile = () => {
@@ -248,10 +338,58 @@
       isConnecting.value = false;
     }
   };
+
+  const showVerifyTaoAddressModal = () => {
+    showModal.value = true;
+  };
+  const hideVerifyTaoAddressModal = () => {
+    showModal.value = false;
+  };
+  const verifyTaoAddress = async () => {
+  isValidating.value = true;
+  console.log('Verify Tao address:', taoAddress.value);
+
+  try {
+    // 首先检查地址是否已验证
+    const {existed} = await saveAddress(taoAddress.value);
+    
+    if(existed) {
+      alert('This Tao address has already been verified!');
+      hideVerifyTaoAddressModal();
+      return;
+    }
+
+    if (isValidTaoAddress(taoAddress.value)) {
+      const {saved} = await saveAddress(taoAddress.value);
+      if (saved) {
+        alert('Tao address verified successfully!');
+        hideVerifyTaoAddressModal();
+      } else {
+        alert('Failed to verify address, please try again.');
+      }
+    } else {
+      alert('Invalid Tao address, please check and try again.');
+    }
+  } catch (error) {
+    console.error('error:', error);
+    alert('Failed to verify address, please try again.');
+  } finally {
+    isValidating.value = false;
+  }
+ };
+
+ const isValidTaoAddress = (address: string): boolean => {
+  if (!address || typeof address !== 'string') {
+    return false;
+  }
+  const taoAddressRegex = /^5[1-9A-HJ-NP-Za-km-z]{47}$/;
+  return taoAddressRegex.test(address);
+};
+ 
 </script>
 
 <template>
-  <Button asChild variant="outline" type="button">
+  <Button asChild variant="outline" type="button" class="rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4  font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]">
     <div @click="login">
       <component
         v-if="providerData.icon"
@@ -262,4 +400,22 @@
     </div>
   </Button>
   <!-- <div>钱包地址: {{ walletAddress }}</div> -->
+
+   <Button @click="showVerifyTaoAddressModal" class="mt-2 rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4  font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]">
+    Verify your Tao address</Button>
+
+    <div
+     v-if="showModal"
+     class="fixed inset-0 z-50 flex items-center justify-center rounded-lg border-2"
+     >
+     <div
+        class="rounded-lg bg-white p-6 shadow-lg"
+         style="width: 40%; height: 50%;">
+       <p class="mb-10 text-xl font-bold">Enter your account coldkey below:</p>
+       <input type="text" v-model="taoAddress" placeholder="5h1z15daw......" class="mb-4 w-full rounded-lg border-2 border-gray-300 p-2">
+       <div class="flex flex-col items-center justify-center">
+       <Button @click="verifyTaoAddress" :disabled="isValidating" class="mt-8 w-[50%] rounded-[20px] border-2 text-black">{{ isValidating ? 'verifing...' : 'verified' }}</Button>
+       <Button @click="hideVerifyTaoAddressModal" class="mt-4 w-[50%] rounded-[20px] border-2  text-black">Cancel</Button></div>           
+      </div>
+    </div>
 </template>

@@ -1,10 +1,11 @@
-
 <script setup lang="ts">
   import AOS from "aos";
   import "aos/dist/aos.css";
+  import { ref } from 'vue'
 
   import { CalendarCheck } from 'lucide-vue-next'
   import { useToast } from "@/modules/ui/components/toast";
+
 
   const { apiCaller } = useApiCaller();
 
@@ -14,6 +15,7 @@
 
   type balanceInquiryType = {withdrawable: number; pending: number; completed: number}
 
+const showPopup = ref(false)
 const audioRecorder = ref(null)
 const isRecording = ref(false)
 const showConfirmation = ref(false);
@@ -509,21 +511,24 @@ src="/images/logo-text.png" alt="Our application"
                     data-aos-duration="900"
                     >
                     <div
-                        class="relative mx-auto w-full max-w-7xl   rounded-[48px] border border-[#0C0E0C] bg-cover bg-center bg-no-repeat px-5 py-10 text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
+                        class="relative mx-auto w-full max-w-7xl rounded-[48px] border-2 border-[#0C0E0C] bg-cover bg-center bg-no-repeat px-5 py-10 text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
                     >
                         <img src="/images/trade-bg.png" class="absolute left-0 top-0 size-full rounded-[48px] object-cover opacity-60" />
                         <div class="relative mx-auto flex max-w-3xl flex-col items-center justify-center text-center">
                         <div class="mb-5  max-w-[720px] lg:mb-10">
                             <h2 class="mb-2 text-2xl font-semibold md:text-2xl">
-                                IDO ANNOUNCEMENT
+                              Fundraising
                             </h2>
                             <div class="mx-auto flex max-w-[630px] flex-col items-center justify-center">
                             <p class="mb-2 rounded-lg border-2 border-[#0C0E0C] bg-[#fbf8f5] px-4 py-2 text-lg text-[#0C0E0C] [box-shadow:#B8B6B5_0px_4px]">
                               Powering the Next-Gen Subnet on Bittensor
                             </p>
-                            <h3 class="mt-4 text-xl font-semibold">Raised</h3>
-                            <p class="pt-10 text-4xl font-semibold">$TAO <span class="ml-2">10</span></p>
-                            </div>
+                            <h3 class="mt-4 text-xl font-semibold">WE CHARGE</h3>
+                            <p class="pt-6 text-4xl font-semibold">$TAO <span class="ml-2">10</span></p>
+                            <p class="pt-6 text-4xl font-semibold">$BTC <span class="ml-3">10</span></p>
+                            <p class="pt-6 text-4xl font-semibold">$ETH <span class="ml-4">10</span></p>
+                            <p class="pt-6 text-4xl font-semibold">$BNB <span class="ml-3">10</span></p>
+                           </div>
                         </div>
                         <!-- <div class="mb-4">
                           <span>Wallet Address：</span>
@@ -534,7 +539,7 @@ src="/images/logo-text.png" alt="Our application"
                             </span>
                           </p>
                         </div> -->
-                        <div class="mb-4">
+                        <!-- div class="mb-4">
                           <span>Wallet Address：</span>
                           <p class="break-all">
                             5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL<svg @click="copyText('5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL')" class="ml-1 inline-block hover:cursor-pointer" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" width="1em" height="1em">
@@ -542,19 +547,112 @@ src="/images/logo-text.png" alt="Our application"
                               <path d="M192.597333 753.322667H147.328A104.661333 104.661333 0 0 1 42.666667 648.661333V147.328A104.661333 104.661333 0 0 1 147.328 42.666667H650.24a104.661333 104.661333 0 0 1 104.618667 104.661333v49.962667c0 26.538667-20.309333 46.848-46.848 46.848a46.037333 46.037333 0 0 1-46.848-46.848V147.328a10.666667 10.666667 0 0 0-10.922667-10.965333H147.328a10.666667 10.666667 0 0 0-10.965333 10.965333V650.24c0 6.229333 4.693333 10.922667 10.965333 10.922667h45.269333c26.538667 0 46.848 20.309333 46.848 46.848 0 26.538667-21.845333 45.312-46.848 45.312z"></path>
                             </svg>
                           </p>
-                        </div>
+                        </div> -->
+                      <div>
                         <Button
+                            @click="showPopup = true" 
                             class="rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4  font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
                             >View Details</Button
                         >
-                        <div class="flex items-center py-6 text-2xl lg:mb-10">
+                        
+                          <div
+                          v-if="showPopup" 
+                          style="
+                            position: fixed;
+                            top: 50%; left:50%;
+                            transform: translate(-50%, -50%);
+                            width: 100%; height:100%;
+                            border-radius:20px;
+                            background-color: transparent;
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;">
+                            <div 
+                            style="
+                              width:100%;
+                              height:100% ;
+                              background-color: #FBF8F5;
+                              border-radius:40px;
+                              border:2px solid #0C0E0C;
+                              padding: 20px;
+                              box-shadow:rgb(0, 0, 0) 0px 4px;">
+                              <h2
+                             class="rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-2  font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
+                             style="position:absolute; top: 5%; left: 50%; transform: translate(-50%);">Current adress</h2>
+                             <p class="mt-[100px] text-4xl font-semibold">$TAO</p>
+                             <p class="break-all">5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL
+                              <svg
+                             @click="copyText('5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL')"
+                             class="ml-1 inline-block hover:cursor-pointer" viewBox="0 0 1024 1024" version="1.1"
+                             xmlns="http://www.w3.org/2000/svg" width="1em" height="1em">
+                             <path
+                                  d="M878.250667 981.333333H375.338667a104.661333 104.661333 0 0 1-104.661334-104.661333V375.338667a104.661333 104.661333 0 0 1 104.661334-104.661334h502.912a104.661333 104.661333 0 0 1 104.661333 104.661334v502.912C981.333333 934.485333 934.485333 981.333333 878.250667 981.333333zM375.338667 364.373333a10.666667 10.666667 0 0 0-10.922667 10.965334v502.912c0 6.229333 4.693333 10.922667 10.922667 10.922666h502.912a10.666667 10.666667 0 0 0 10.922666-10.922666V375.338667a10.666667 10.666667 0 0 0-10.922666-10.922667H375.338667z">
+                                 </path>
+                              <path
+                                  d="M192.597333 753.322667H147.328A104.661333 104.661333 0 0 1 42.666667 648.661333V147.328A104.661333 104.661333 0 0 1 147.328 42.666667H650.24a104.661333 104.661333 0 0 1 104.618667 104.661333v49.962667c0 26.538667-20.309333 46.848-46.848 46.848a46.037333 46.037333 0 0 1-46.848-46.848V147.328a10.666667 10.666667 0 0 0-10.922667-10.965333H147.328a10.666667 10.666667 0 0 0-10.965333 10.965333V650.24c0 6.229333 4.693333 10.922667 10.965333 10.922667h45.269333c26.538667 0 46.848 20.309333 46.848 46.848 0 26.538667-21.845333 45.312-46.848 45.312z">
+                              </path>
+                              </svg>
+                            </p>
+                             <p class="mt-5 text-4xl font-semibold">$BTC</p>
+                             <p class="break-all">5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL
+                              <svg
+                             @click="copyText('5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL')"
+                             class="ml-1 inline-block hover:cursor-pointer" viewBox="0 0 1024 1024" version="1.1"
+                             xmlns="http://www.w3.org/2000/svg" width="1em" height="1em">
+                             <path
+                                  d="M878.250667 981.333333H375.338667a104.661333 104.661333 0 0 1-104.661334-104.661333V375.338667a104.661333 104.661333 0 0 1 104.661334-104.661334h502.912a104.661333 104.661333 0 0 1 104.661333 104.661334v502.912C981.333333 934.485333 934.485333 981.333333 878.250667 981.333333zM375.338667 364.373333a10.666667 10.666667 0 0 0-10.922667 10.965334v502.912c0 6.229333 4.693333 10.922667 10.922667 10.922666h502.912a10.666667 10.666667 0 0 0 10.922666-10.922666V375.338667a10.666667 10.666667 0 0 0-10.922666-10.922667H375.338667z">
+                                 </path>
+                              <path
+                                  d="M192.597333 753.322667H147.328A104.661333 104.661333 0 0 1 42.666667 648.661333V147.328A104.661333 104.661333 0 0 1 147.328 42.666667H650.24a104.661333 104.661333 0 0 1 104.618667 104.661333v49.962667c0 26.538667-20.309333 46.848-46.848 46.848a46.037333 46.037333 0 0 1-46.848-46.848V147.328a10.666667 10.666667 0 0 0-10.922667-10.965333H147.328a10.666667 10.666667 0 0 0-10.965333 10.965333V650.24c0 6.229333 4.693333 10.922667 10.965333 10.922667h45.269333c26.538667 0 46.848 20.309333 46.848 46.848 0 26.538667-21.845333 45.312-46.848 45.312z">
+                              </path>
+                              </svg>
+                            </p>
+                             <p class="mt-5 text-4xl font-semibold">$ETH</p>
+                             <p class="break-all">5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL
+                              <svg
+                             @click="copyText('5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL')"
+                             class="ml-1 inline-block hover:cursor-pointer" viewBox="0 0 1024 1024" version="1.1"
+                             xmlns="http://www.w3.org/2000/svg" width="1em" height="1em">
+                             <path
+                                  d="M878.250667 981.333333H375.338667a104.661333 104.661333 0 0 1-104.661334-104.661333V375.338667a104.661333 104.661333 0 0 1 104.661334-104.661334h502.912a104.661333 104.661333 0 0 1 104.661333 104.661334v502.912C981.333333 934.485333 934.485333 981.333333 878.250667 981.333333zM375.338667 364.373333a10.666667 10.666667 0 0 0-10.922667 10.965334v502.912c0 6.229333 4.693333 10.922667 10.922667 10.922666h502.912a10.666667 10.666667 0 0 0 10.922666-10.922666V375.338667a10.666667 10.666667 0 0 0-10.922666-10.922667H375.338667z">
+                                 </path>
+                              <path
+                                  d="M192.597333 753.322667H147.328A104.661333 104.661333 0 0 1 42.666667 648.661333V147.328A104.661333 104.661333 0 0 1 147.328 42.666667H650.24a104.661333 104.661333 0 0 1 104.618667 104.661333v49.962667c0 26.538667-20.309333 46.848-46.848 46.848a46.037333 46.037333 0 0 1-46.848-46.848V147.328a10.666667 10.666667 0 0 0-10.922667-10.965333H147.328a10.666667 10.666667 0 0 0-10.965333 10.965333V650.24c0 6.229333 4.693333 10.922667 10.965333 10.922667h45.269333c26.538667 0 46.848 20.309333 46.848 46.848 0 26.538667-21.845333 45.312-46.848 45.312z">
+                              </path>
+                              </svg>
+                            </p>
+                             <p class="mt-5 text-4xl font-semibold">$BNB</p>
+                             <p class="break-all">5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL
+                              <svg
+                             @click="copyText('5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL')"
+                             class="ml-1 inline-block hover:cursor-pointer" viewBox="0 0 1024 1024" version="1.1"
+                             xmlns="http://www.w3.org/2000/svg" width="1em" height="1em">
+                             <path
+                                  d="M878.250667 981.333333H375.338667a104.661333 104.661333 0 0 1-104.661334-104.661333V375.338667a104.661333 104.661333 0 0 1 104.661334-104.661334h502.912a104.661333 104.661333 0 0 1 104.661333 104.661334v502.912C981.333333 934.485333 934.485333 981.333333 878.250667 981.333333zM375.338667 364.373333a10.666667 10.666667 0 0 0-10.922667 10.965334v502.912c0 6.229333 4.693333 10.922667 10.922667 10.922666h502.912a10.666667 10.666667 0 0 0 10.922666-10.922666V375.338667a10.666667 10.666667 0 0 0-10.922666-10.922667H375.338667z">
+                                 </path>
+                              <path
+                                  d="M192.597333 753.322667H147.328A104.661333 104.661333 0 0 1 42.666667 648.661333V147.328A104.661333 104.661333 0 0 1 147.328 42.666667H650.24a104.661333 104.661333 0 0 1 104.618667 104.661333v49.962667c0 26.538667-20.309333 46.848-46.848 46.848a46.037333 46.037333 0 0 1-46.848-46.848V147.328a10.666667 10.666667 0 0 0-10.922667-10.965333H147.328a10.666667 10.666667 0 0 0-10.965333 10.965333V650.24c0 6.229333 4.693333 10.922667 10.965333 10.922667h45.269333c26.538667 0 46.848 20.309333 46.848 46.848 0 26.538667-21.845333 45.312-46.848 45.312z">
+                              </path>
+                              </svg>
+                            </p>
+                              <!-- Close button -->
+                              <button 
+                               class="rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-2  font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
+                               style="position: absolute; bottom: 50px; left: 50%; transform: translateX(-50%);"
+                               @click="showPopup = false">Close</button>
+                              </div>
+                          </div>
+                        
+                        
+                      </div>  
+                        <!-- div class="flex items-center py-6 text-2xl lg:mb-10">
                             <Divide class="w-20 rounded-2xl border-2 border-[#0C0E0C] bg-white py-10 text-xl font-bold [box-shadow:rgb(0,0,0)_0px_4px]">TAO</Divide>
-                            <!-- <span class="mx-2 font-normal text-xl">Coming Soon</span>  -->
+                            < <span class="mx-2 font-normal text-xl">Coming Soon</span> >
                             <NuxtImg src="/images/coming-soon.png" class="mx-2 w-32 " />
 
                             <div class="w-20 rounded-2xl border-2 border-[#0C0E0C] bg-white py-10 text-xl font-bold [box-shadow:rgb(0,0,0)_0px_4px]">WTAO</div>
-                        </div>
-                        <a target="_blank"href="https://bittensor.com/scan/address/5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL">
+                        </div -->
+                        <a class="mt-8" target="_blank" href="https://bittensor.com/scan/address/5H45Ne5CqQdvTU6DFz5SUM83ULuJkaUAk8bVfHWafvimFbiL">
                           <Button
                             class="mb-4 rounded-3xl  border border-[#0C0E0C] bg-[#fbf8f5] px-6 py-4 font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px]"
                             >Explore Hash</Button
@@ -849,7 +947,7 @@ src="/images/logo-text.png" alt="Our application"
                 <div
                   class="my-5 mr-8 flex max-w-[500px] grow basis-[100px] flex-col space-y-5 lg:my-0 lg:mr-0"
                 >
-                  <h2 class="font-inter font-medium">IDO</h2>
+                  <h2 class="font-inter font-medium">WOOF</h2>
                   <a href="" class="font-inter font-light text-gray-500">Trade</a>
                   <a href="" class="font-inter font-light text-gray-500">Stake</a>
                   <a href="https://docs.woofai.io"  target="_blank" class="font-inter font-light text-gray-500">Docs</a>

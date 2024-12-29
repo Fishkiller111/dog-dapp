@@ -1,5 +1,5 @@
 # 使用指定的 Node.js 版本
-FROM node:20.13.1
+FROM docker.io/library/node:20-alpine
 
 # 设置工作目录
 WORKDIR /app

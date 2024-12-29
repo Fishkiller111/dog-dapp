@@ -19,11 +19,17 @@ export default defineNuxtConfig({
   },
 
   experimental: {
+    noCompatibilityCheck: true,
     typedPages: true,
     cookieStore: false,
   },
 
   runtimeConfig: {
+    r2AccessKeyId: process.env.NUXT_R2_ACCESS_KEY_ID,
+    r2SecretAccessKey: process.env.NUXT_R2_SECRET_ACCESS_KEY,
+    r2AccountId: process.env.NUXT_R2_ACCOUNT_ID,
+    r2BucketName: process.env.NUXT_R2_BUCKET_NAME,
+
     public: {
       siteUrl: baseUrl,
       s3AvatarsBucketName: process.env.NUXT_PUBLIC_S3_AVATARS_BUCKET_NAME,
