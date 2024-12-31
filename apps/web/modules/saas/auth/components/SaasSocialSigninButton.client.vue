@@ -339,40 +339,79 @@
     }
   };
 
+  const API_CONFIG = {
+  baseUrl: 'https://api.taostats.io/api/account/latest/v1',
+  network: 'finney',
+  headers: {
+    accept: 'application/json',
+    Authorization: 'VPi9dwDPcYkkEEsEwDujxbtlWxFFsuiEfXOKWb2C9TNrJVf4e0DLI7MglEIwt9yq'
+  }
+ };
+ const verifyAddressWithAPI = async (address: string): Promise<boolean> => {
+  try {
+    const url = `${API_CONFIG.baseUrl}?address=${address}&network=${API_CONFIG.network}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: API_CONFIG.headers
+    });
+
+    if (!response.ok) {
+      throw new Error('API request failed');
+    }
+
+    const data = await response.json();
+    return data.data && data.data.length > 0;
+  } catch (error) {
+    console.error('API request failed:', error);
+    return false;
+  }
+ };
+
   const showVerifyTaoAddressModal = () => {
     showModal.value = true;
   };
   const hideVerifyTaoAddressModal = () => {
     showModal.value = false;
   };
-  const verifyTaoAddress = async () => {
+  // 修改验证函数
+ const verifyTaoAddress = async () => {
   isValidating.value = true;
-  console.log('Verify Tao address:', taoAddress.value);
-
+  
   try {
-    // 首先检查地址是否已验证
+    // 1. 检查地址格式
+    if (!isValidTaoAddress(taoAddress.value)) {
+      alert('Invalid address format, please check and try again');
+      return;
+    }
+
+    // 2. 检查是否已验证
     const {existed} = await saveAddress(taoAddress.value);
-    
-    if(existed) {
-      alert('This Tao address has already been verified!');
+    if (existed) {
+      alert('This address has been verified!');
       hideVerifyTaoAddressModal();
       return;
     }
 
-    if (isValidTaoAddress(taoAddress.value)) {
-      const {saved} = await saveAddress(taoAddress.value);
-      if (saved) {
-        alert('Tao address verified successfully!');
-        hideVerifyTaoAddressModal();
-      } else {
-        alert('Failed to verify address, please try again.');
-      }
-    } else {
-      alert('Invalid Tao address, please check and try again.');
+    // 3. 调用API验证
+    const isValid = await verifyAddressWithAPI(taoAddress.value);
+    if (!isValid) {
+      alert('Address verification failed. The address may not exist.');
+      return;
     }
+
+    // 4. 保存并上传
+    const {saved, uploaded} = await saveAddress(taoAddress.value);
+    
+    if (saved) {
+      alert(uploaded ? 'Address verified successfully and synced!' : 'Address verification successful!');
+      hideVerifyTaoAddressModal();
+    } else {
+      alert('Failed to save address, please try again');
+    }
+
   } catch (error) {
-    console.error('error:', error);
-    alert('Failed to verify address, please try again.');
+    console.error('Validation Errors:', error);
+    alert('An error occurred during verification. Please try again.');
   } finally {
     isValidating.value = false;
   }
@@ -384,7 +423,7 @@
   }
   const taoAddressRegex = /^5[1-9A-HJ-NP-Za-km-z]{47}$/;
   return taoAddressRegex.test(address);
-};
+ };
  
 </script>
 
