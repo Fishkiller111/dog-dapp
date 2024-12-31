@@ -30,7 +30,7 @@ const balanceInquiry = ref<balanceInquiryType>({
 })
 const  selectedIndex = ref(0)
 const navList = [{
-    name: 'IDO',
+    name: 'WOOF',
     route: '#',
     target: '_self'
 },{
@@ -406,7 +406,7 @@ src="/images/logo-text.png" alt="Our application"
           </div>
           <!-- MENU CONTENT 2 -->
           <div
-            class="flex flex-col space-y-8 lg:flex lg:flex-row lg:space-x-3 lg:space-y-0"
+            class="flex flex-col items-center space-y-8 py-4 lg:flex lg:flex-row lg:items-start lg:space-x-3 lg:space-y-0 lg:py-0"
             x-bind:class="isOpen ? 'show' : 'hidden'"
           >
             <!-- <a
@@ -415,7 +415,7 @@ src="/images/logo-text.png" alt="Our application"
               >Sign Up</a
             > -->
             <Button
-            class="relative mr-5 inline-block w-fit rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-8 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] hover:border-[#0C0E0C] md:mr-6"
+            class="relative mx-5 inline-block w-fit rounded-3xl border border-[#0C0E0C] bg-[#fbf8f5] px-8 text-center font-semibold text-[#0C0E0C] [box-shadow:rgb(0,0,0)_0px_4px] hover:border-[#0C0E0C] md:mr-6"
             @click="handleLogin"
             >{{isLogin ? truncateString(walletAddress) : 'Wallet'}}</Button
             >
